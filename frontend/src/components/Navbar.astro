@@ -5,8 +5,9 @@ import { MoveRight } from "lucide-react";
 const { userId } = Astro.locals.auth();
 
 const UserSync = async(userId: string) => {
-  const response = await fetch("http://localhost:3000/user/sync", {
-      method: "GET",
+  try {
+    const response = await fetch("http://localhost:3000/user/sync", {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-clerk-user-id": userId,
@@ -19,6 +20,9 @@ const UserSync = async(userId: string) => {
 
     const data = await response.json();
     console.log("Synced user:", data);
+  } catch(err) {
+    console.error("An error occured =", err);
+  }
 }
 
 if(userId) {
