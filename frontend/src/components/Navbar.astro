@@ -1,0 +1,47 @@
+---
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/astro/components";
+import { MoveRight } from "lucide-react";
+
+const { userId } = Astro.locals.auth();
+
+const UserSync = async(userId: string) => {
+  const response = await fetch("http://localhost:3000/user/sync", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-clerk-user-id": userId,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Synced user:", data);
+}
+
+if(userId) {
+  console.log("Function is going to be called!");
+  UserSync(userId);
+}
+  
+---
+
+<div class="p-5 bg-violet-100 flex justify-between items-center">
+  <h2 class="text-3xl font-bold text-violet-700">TaskAI</h2>
+  <!-- <GetStartedButton /> -->
+  <SignedOut>
+    <SignInButton mode="modal" asChild>
+      <button
+        class="bg-violet-700 hover:bg-violet-800 text-white transition cursor-pointer flex p-2 rounded-md gap-2"
+      >
+        Get Started
+        <MoveRight />
+      </button>
+    </SignInButton>
+  </SignedOut>
+  <SignedIn>
+    <UserButton />
+  </SignedIn>
+</div>

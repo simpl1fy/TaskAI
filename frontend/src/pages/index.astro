@@ -1,0 +1,134 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { SignedIn, SignedOut, SignInButton } from "@clerk/astro/components";
+import { MoveRight } from "lucide-react";
+
+// Features array
+const features = [
+  {
+    icon: "/icons/zap.svg",
+    title: "AI-Powered Task Generation",
+    text: "Simply describe your goals, and our AI will create a structured task list tailored to your needs.",
+  },
+  {
+    icon: "/icons/sliders-vertical.svg",
+    title: "Smart Organization",
+    text: "Tasks are automatically prioritized and categorized to help you focus on what matters most.",
+  },
+  {
+    icon: "/icons/clipboard.svg",
+    title: "Intuitive Interface",
+    text: "Clean, distraction-free design helps you stay focused on completing your tasks efficiently.",
+  },
+];
+
+const steps = [
+  {
+    index: 1,
+    title: "Describe Your Needs",
+    description:
+      "Tell the AI what you're working on or what you need to accomplish.",
+  },
+  {
+    index: 2,
+    title: "AI Generates Tasks",
+    description:
+      "Our AI breaks down your goals into actionable, manageable tasks.",
+  },
+  {
+    index: 3,
+    title: "Complete & Progress",
+    description:
+      "Track your progress as you complete tasks and achieve your goals.",
+  },
+];
+---
+
+<BaseLayout>
+  <div>
+    <!-- Heading Section -->
+    <header
+      class="flex flex-col justify-center items-center pt-40 pb-30 bg-violet-50"
+    >
+      <h1 class="text-5xl font-bold my-3">
+        <span class="text-violet-700">TaskAI</span> - Your Intelligent Task Manager
+      </h1>
+      <p class="text-gray-700 mt-2 mb-4">
+        Let AI organize your day. Generate personalized tasks, stay productive,
+        and accomplish more with less effort.
+      </p>
+      <SignedIn>
+        <button
+          class="bg-violet-700 hover:bg-violet-800 text-white transition cursor-pointer flex p-3 rounded-md gap-2"
+        >
+          To Dashboard <MoveRight />
+        </button>
+      </SignedIn>
+      <SignedOut>
+        <SignInButton mode="modal" asChild>
+          <button
+            class="bg-violet-700 hover:bg-violet-800 text-white transition cursor-pointer flex p-3 rounded-md gap-2"
+          >
+            Get Started
+            <MoveRight />
+          </button>
+        </SignInButton>
+      </SignedOut>
+    </header>
+
+    <!-- Features Section -->
+    <section
+      class="flex justify-center pt-4 pb-20 bg-violet-50 gap-6 max-w-8xl"
+    >
+      {
+        features.map((f) => (
+          <div class="bg-white shadow-md p-3 rounded-lg max-w-2xs hover:-translate-y-2 transition">
+            <img
+              src={f.icon}
+              alt="image"
+              class="bg-violet-100 text-violet-700 p-4 rounded-full m-2"
+            />
+            <h3 class="font-bold text-lg mb-2">{f.title}</h3>
+            <p class="text-gray-700 text-md">{f.text}</p>
+          </div>
+        ))
+      }
+    </section>
+
+    <!-- How it works section -->
+    <section class="bg-violet-50 pb-20 pt-10">
+      <h2 class="text-2xl text-center font-bold mb-8">How It Works</h2>
+      <div class="flex justify-center gap-5">
+        {
+          steps.map((s) => (
+            <div class="flex flex-col items-center justify-center max-w-2xs">
+              <span class="bg-violet-800 text-white p-3 rounded-full">
+                {s.index}
+              </span>
+              <h3 class="text-lg font-bold">{s.title}</h3>
+              <p class="text-gray-700 text-center">{s.description}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- Navigation Section -->
+    <section class="bg-violet-50 p-10">
+      <div
+        class="bg-violet-700 p-10 rounded-lg text-white flex flex-col items-center"
+      >
+        <h1 class="text-2xl font-bold mb-2">
+          Ready to boost your productivity?
+        </h1>
+        <p class="text-sm mb-3">
+          Start using TaskAI today and experience the power of AI-assisted task
+          management.
+        </p>
+        <a class="bg-white text-violet-700 p-4 rounded-sm cursor-pointer"
+          >Try TaskAI Now!</a
+        >
+      </div>
+    </section>
+  </div>
+</BaseLayout>
