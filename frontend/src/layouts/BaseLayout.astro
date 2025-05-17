@@ -23,9 +23,7 @@ const publishable_key = import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY;
   <body>
     <Navbar />
     <main>
-      <ClerkProvider publishableKey={publishable_key}>
-        <slot />
-      </ClerkProvider>
+      <slot />
     </main>
   </body>
 </html>
