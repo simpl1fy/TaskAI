@@ -1,10 +1,18 @@
 ---
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/astro/components";
+import {
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from "@clerk/astro/components";
 import { MoveRight } from "lucide-react";
+import GetToken from "../components/GetToken";
+import ClerkProviderWrapper from "./ClerkProviderWrapper";
+import { ClerkProvider } from "@clerk/clerk-react";
 
 const { userId } = Astro.locals.auth();
 
-const UserSync = async(userId: string) => {
+const UserSync = async (userId: string) => {
   try {
     const response = await fetch("http://localhost:3000/user/sync", {
       method: "POST",
@@ -20,16 +28,15 @@ const UserSync = async(userId: string) => {
 
     const data = await response.json();
     console.log("Synced user:", data);
-  } catch(err) {
+  } catch (err) {
     console.error("An error occured =", err);
   }
-}
+};
 
-if(userId) {
+if (userId) {
   console.log("Function is going to be called!");
   UserSync(userId);
 }
-  
 ---
 
 <div class="p-5 bg-violet-100 flex justify-between items-center">

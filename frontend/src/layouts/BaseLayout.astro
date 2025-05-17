@@ -1,6 +1,8 @@
 ---
 import "../styles/global.css";
 import Navbar from "@/components/Navbar.astro";
+import { ClerkProvider } from "@clerk/clerk-react";
+const publishable_key = import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY;
 ---
 
 <html lang="en">
@@ -20,6 +22,10 @@ import Navbar from "@/components/Navbar.astro";
   </head>
   <body>
     <Navbar />
-    <slot />
+    <main>
+      <ClerkProvider publishableKey={publishable_key}>
+        <slot />
+      </ClerkProvider>
+    </main>
   </body>
 </html>
