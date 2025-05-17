@@ -21,6 +21,7 @@ type GroupedTaskList = {
 const TaskList = () => {
 
   const [data, setData] = useState<GroupedTaskList[]>([]);
+  const [listUpdated, setListUpdated] = useState(false);
 
   const { getToken } = useAuth();
 
@@ -43,7 +44,7 @@ const TaskList = () => {
       }
     }
     fetchTaskList();
-  }, [])
+  }, [listUpdated])
 
   const handleChange = async (listIndex:number, taskIndex:number, taskId: number) => {
     const newData = [...data];
@@ -79,17 +80,17 @@ const TaskList = () => {
   }
 
   return (
-    <div className='shadow-lg p-4 rounded-lg'>
+    <div className='shadow-lg p-4 rounded-lg bg-white'>
       <header className='flex justify-between mb-4'>
         <h3 className='text-2xl font-bold'>Your Tasks</h3>
-        <CreateList />
+        <CreateList isUpdated={setListUpdated}  />
       </header>
       <section className='flex flex-wrap gap-5'>
         {data.map((value, index) => (
-          <div key={index} className='border border-gray-100 shadow-lg p-4 min-w-xs min-h-lh'>
+          <div key={index} className='border-1 border-gray-300 rounded-md p-4 min-w-xs min-h-lh bg-white'>
             <header className='flex justify-between'>
               <h4 className='text-lg font-semibold'>{value.listTitle}</h4>
-              <DropDown />
+              <DropDown id={value.listId} isUpdated={setListUpdated} />
             </header>
             {value.tasks.map((tValue, tIndex) => (
               <label

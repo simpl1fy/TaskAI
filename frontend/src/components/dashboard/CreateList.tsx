@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { Button } from "../ui/button";
 import {
     Dialog,
@@ -13,8 +14,9 @@ import {
 import { Input } from "../ui/input";
 import { Trash } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
+import { toast } from "sonner";
 
-const CreateList = () => {
+const CreateList = ({ isUpdated }: { isUpdated: Dispatch<SetStateAction<boolean>>}) => {
 
   const { getToken } = useAuth();
   const [title, setTitle] = useState("");
@@ -57,12 +59,13 @@ const CreateList = () => {
       })
       const data = await res.json();
       if(!data.success) {
-        alert("Failed to add tasklist");
+        toast.error(data.message);
+        isUpdated((prev) => !prev);
       } else {
-        alert("Success!");
+        toast.success(data.message);
       }
     } catch(err) {
-      console.error(err);
+      console.error(err);  
     }
   }
 
@@ -124,7 +127,9 @@ const CreateList = () => {
             <DialogClose asChild>
               <Button variant="destructive" className="cursor-pointer" onClick={() => {setTaskList([""]); setTitle("")}}>Close</Button>
             </DialogClose>
-            <Button type="button" variant="default" className="bg-green-600 hover:bg-green-700 cursor-pointer" onClick={handleSubmit}>Save</Button>
+            <DialogClose asChild>
+              <Button type="button" variant="default" className="bg-green-600 hover:bg-green-700 cursor-pointer" onClick={handleSubmit}>Save</Button>
+            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>
