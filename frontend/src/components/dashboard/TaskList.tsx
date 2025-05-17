@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '../ui/button';
+import { toast } from 'sonner';
 import CreateList from './CreateList';
 import { useAuth } from '@clerk/clerk-react';
 import DropDown from './DropDown';
@@ -21,7 +21,6 @@ type GroupedTaskList = {
 const TaskList = () => {
 
   const [data, setData] = useState<GroupedTaskList[]>([]);
-  const [showSave, setShowSave] = useState(Array(data.length).fill(false));
 
   const { getToken } = useAuth();
 
@@ -46,18 +45,37 @@ const TaskList = () => {
     fetchTaskList();
   }, [])
 
-  const handleChange = (listIndex:number, taskIndex:number) => {
+  const handleChange = async (listIndex:number, taskIndex:number, taskId: number) => {
     const newData = [...data];
     const task = newData[listIndex].tasks[taskIndex];
-    task.taskStatus = !task.taskStatus;
+    const status = !task.taskStatus;
+    task.taskStatus = status;
     setData(newData);
-    const newShowSave = [...showSave];
-    if(newShowSave[listIndex]) {
-      newShowSave[listIndex] = false;
-    } else {
-      newShowSave[listIndex] = true;
+
+    try {
+
+      const token = await getToken();
+
+      const response = await fetch("http://localhost:3000/task/update_status", {
+        method: "PATCH",
+        headers: {
+          'Content-type': 'Application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ taskId: taskId, status: status })
+      })
+
+      const data = await response.json();
+      if(data.success) {
+        toast(data.message);
+      } else {
+        task.taskStatus = !task.taskStatus;
+        setData(newData);
+        alert(data.message);
+      }
+    } catch(err) {
+      console.error(err);
     }
-    setShowSave(newShowSave);
   }
 
   return (
@@ -81,22 +99,13 @@ const TaskList = () => {
                 <input 
                   type='checkbox'
                   checked={tValue.taskStatus}
-                  onChange={() => handleChange(index, tIndex)}
+                  onChange={() => handleChange(index, tIndex, tValue.taskId)}
                 />
                 <span className={`text-base ${tValue.taskStatus ? 'line-through text-gray-400': 'text-gray-800'}`}>
                   {tValue.taskTitle}
                 </span>
               </label>
             ))}
-            <div className='flex justify-end'>
-              {showSave[index] && 
-                <Button 
-                  className='cursor-pointer bg-green-600 hover:bg-green-700 transition'
-                >
-                  Save
-                </Button>
-              }
-            </div>
           </div>
         ))}
       </section>

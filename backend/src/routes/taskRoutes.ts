@@ -92,6 +92,29 @@ tasksRouter.post('/add_list', requireAuth, async (c) => {
         console.error("An error occured while adding task list =", err);
         return c.json({ message: "Internal Server Error" }, 500);
     }
+});
+
+tasksRouter.patch("/update_status", requireAuth, async (c) => {
+    try {
+        const { taskId, status } = await c.req.json();
+        console.log(taskId, status);
+        if(typeof taskId !== "number" || typeof status !== "boolean") {
+            return c.json({ success: false, message: "Invalid Input" }, 400);
+        }
+
+        const res = await db.update(tasks).set({ status }).where(eq(tasks.id, taskId));
+        // console.log(res);
+
+        if(res.rowCount && res.rowCount > 0) {
+            return c.json({ success: true, message: "Updated Successfully!" }, 200);
+        } else {
+            return c.json({ success: false, message: "Failed to update task" }, 404);
+        }
+
+    } catch(err) {
+        console.error("An error occured while updating task status =", err);
+        return c.json({ message: "Internal Server Error" }, 500);
+    }
 })
 
 export default tasksRouter;

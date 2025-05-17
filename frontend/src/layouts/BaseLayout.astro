@@ -1,8 +1,7 @@
 ---
 import "../styles/global.css";
 import Navbar from "@/components/Navbar.astro";
-import { ClerkProvider } from "@clerk/clerk-react";
-const publishable_key = import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY;
+import { Toaster } from "@/components/ui/sonner";
 ---
 
 <html lang="en">
@@ -25,5 +24,6 @@ const publishable_key = import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY;
     <main>
       <slot />
     </main>
+    <Toaster client:load />
   </body>
 </html>

@@ -20,7 +20,7 @@ userRouter.post('/sync', async(c) => {
         }
 
         const userData = await db.select().from(users).where(eq(users.id, userId));
-        console.log(userData);
+        // console.log(userData);
         if(userData.length === 0) {
             await db.insert(users).values({ id: userId, email: user.emailAddresses[0].emailAddress, name: user.firstName+" "+user.lastName, createdAt: new Date(user.createdAt) })
 
