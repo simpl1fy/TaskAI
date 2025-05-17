@@ -29,9 +29,10 @@ tasksRouter.post('/add_list', requireAuth, async (c) => {
             return c.json({ success: false, message: "Title is required!" });
         }
 
-        if (!tasksArray || tasksArray.length === 0 || !Array.isArray(tasks)) {
+        if (tasksArray.length === 0 || !Array.isArray(tasksArray)) {
           return c.json({ success: false, message: "Tasks are required!" });
         }
+
 
         const insertedList = await db.insert(tasksList).values({ userId, title }).returning({ insertedId: tasksList.id});
         console.log(insertedList);
@@ -43,7 +44,7 @@ tasksRouter.post('/add_list', requireAuth, async (c) => {
 
         const taskRows = tasksArray.map((taskTitle: string) => ({
           title: taskTitle,
-          listId,
+          taskListId: listId,
         }));
 
         await db.insert(tasks).values(taskRows);

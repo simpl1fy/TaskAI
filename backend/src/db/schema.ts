@@ -1,6 +1,6 @@
-import { timestamp, pgTable, pgEnum, varchar, integer } from "drizzle-orm/pg-core";
+import { timestamp, pgTable, boolean, varchar, integer } from "drizzle-orm/pg-core";
 
-export const statusEnum = pgEnum("status", ["pending", "completed"]);
+// export const statusEnum = pgEnum("status", ["pending", "completed"]);
 
 export const users = pgTable("users", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -21,5 +21,5 @@ export const tasks = pgTable("tasks", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   taskListId: integer("task_list_id").references(() => tasksList.id, {onDelete: 'cascade'}).notNull(),
   title: varchar("title", { length: 255 }).notNull(),
-  status: statusEnum().default("pending")
+  status: boolean().default(false)
 });

@@ -1,13 +1,13 @@
 import React from 'react';
 import ClerkProviderWrapper from '@/components/ClerkProviderWrapper';
-import CreateList from '@/components/dashboard/CreateList';
+import TaskList from '@/components/dashboard/TaskList';
 
-const ClientCreateList = () => {
+const ClientList = () => {
   return (
     <ClerkProviderWrapper>
-      <CreateList />
+      <TaskList />
     </ClerkProviderWrapper>
   )
 }
 
-export default ClientCreateList
+export default ClientList
