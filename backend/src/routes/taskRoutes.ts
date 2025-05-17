@@ -2,17 +2,55 @@ import { Hono } from "hono";
 import { db } from "../db/db";
 import { tasksList, tasks, users } from "../db/schema";
 import { requireAuth } from "../middleware/requireAuth";
-import { getAuth } from "@hono/clerk-auth";
 import { eq } from "drizzle-orm";
 
 const tasksRouter = new Hono();
+
+type TaskItem = {
+  taskId: number;
+  taskTitle: string;
+  taskStatus: boolean | null;
+};
+
+type GroupedTaskList = {
+  listId: number;
+  listTitle: string;
+  createdAt: Date | null;
+  tasks: TaskItem[];
+};
 
 tasksRouter.get('/all_lists', requireAuth, async (c) => {
     try {
         const { userId } = c.get('authData');
         
         const allTasks = await db.select().from(tasksList).leftJoin(tasks, eq(tasksList.id, tasks.taskListId)).where(eq(tasksList.userId, userId));
-        return c.json({ success: true, allTasks }, 200);
+        console.log(allTasks);
+        const grouped = allTasks.reduce<GroupedTaskList[]>((acc, row) => {
+          const listId = row.tasks_lists.id;
+
+          let existing = acc.find((item) => item.listId === listId);
+          const task = row.tasks?.id
+            ? {
+                taskId: row.tasks.id,
+                taskTitle: row.tasks.title,
+                taskStatus: row.tasks.status,
+              }
+            : null;
+
+          if (existing) {
+            if (task) existing.tasks.push(task);
+          } else {
+            acc.push({
+              listId: row.tasks_lists.id,
+              listTitle: row.tasks_lists.title,
+              createdAt: row.tasks_lists.createdAt,
+              tasks: task ? [task] : [],
+            });
+          }
+
+          return acc;
+        }, []);
+        return c.json({ success: true, allTasks: grouped }, 200);
     } catch(err) {
         console.error("An error occured when fetching all tasks lists =", err);
         return c.json({ message: "Internal Server Error" }, 500);

@@ -19,7 +19,6 @@ const CreateList = () => {
   const { getToken } = useAuth();
   const [title, setTitle] = useState("");
   const [taskList, setTaskList] = useState([""]);
-  const [token, setToken] = useState<string | null | undefined>(null);
 
   const handleTaskChange = (index: number, value: string) => {
     const updatedTaskList = [...taskList];
@@ -39,9 +38,8 @@ const CreateList = () => {
   const handleSubmit = async () => {
 
     const fetchedToken = await getToken();
-    setToken(fetchedToken);
 
-    if(!token) {
+    if(!fetchedToken) {
       alert("User not authenticated. Please login first");
       return;
     }
@@ -53,7 +51,7 @@ const CreateList = () => {
         method: "POST",
         headers: {
           'Content-type': "application/json",
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${fetchedToken}`
         },
         body: JSON.stringify({ title: title, tasksArray: taskList })
       })
@@ -134,4 +132,4 @@ const CreateList = () => {
   )
 }
 
-export default CreateList
+export default CreateList;
