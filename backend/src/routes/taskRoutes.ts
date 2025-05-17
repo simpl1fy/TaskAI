@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { db } from "../db/db";
-import { tasksList } from "../db/schema";
-import { tasks } from "../db/schema";
+import { tasksList, tasks, users } from "../db/schema";
 import { requireAuth } from "../middleware/requireAuth";
 import { getAuth } from "@hono/clerk-auth";
 import { eq } from "drizzle-orm";
@@ -12,7 +11,7 @@ tasksRouter.get('/all_lists', requireAuth, async (c) => {
     try {
         const { userId } = c.get('authData');
         
-        const allTasks = await db.select().from(tasksList).where(eq(tasksList.userId, userId));
+        const allTasks = await db.select().from(tasksList).leftJoin(tasks, eq(tasksList.id, tasks.taskListId)).where(eq(tasksList.userId, userId));
         return c.json({ success: true, allTasks }, 200);
     } catch(err) {
         console.error("An error occured when fetching all tasks lists =", err);
