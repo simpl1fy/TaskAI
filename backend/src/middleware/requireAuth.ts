@@ -16,8 +16,6 @@ export const requireAuth: MiddlewareHandler = async (c: Context, next: Next) => 
     await clerkMiddleware()(c, async () => {});
 
     const auth = getAuth(c);
-    console.log(auth);
-
     
     if(!auth?.userId) {
         return c.json({ error: "Authentication Required!" }, 401);
