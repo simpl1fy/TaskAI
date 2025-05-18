@@ -59,6 +59,7 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
         });
         const data = await response.json();
         if(data.success) {
+          // console.log(data.data);
           setData(data.data);
         } else {
           alert("Failed to fetch data");
@@ -185,7 +186,7 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
+      <DialogContent className="max-h-128 overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit your task</DialogTitle>
           <DialogDescription>Edit your task, add more or change the content</DialogDescription>

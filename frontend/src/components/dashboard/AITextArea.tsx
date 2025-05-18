@@ -2,14 +2,27 @@ import { useState } from 'react';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { useAuth } from '@clerk/clerk-react';
+import CreateList from './CreateList';
+import { Loader } from 'lucide-react';
+import { toast } from 'sonner';
+import type { Dispatch, SetStateAction } from 'react';
 
-const AITextArea = () => {
+type ResponseData = {
+  listTitle: string;
+  tasks: string[];
+}
+
+const AITextArea = ({ setListUpdated }: { setListUpdated: Dispatch<SetStateAction<boolean>>}) => {
   
   const { getToken } = useAuth();
 
   const [prompt, setPrompt] = useState("");
+  const [data, setData] = useState<ResponseData>();
+  const [loading, setLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const handleGenerate = async() => {
+    setLoading(true);
     try {
       const token = await getToken();
 
@@ -25,10 +38,18 @@ const AITextArea = () => {
       const resData = await response.json();
       if(resData.success) {
         console.log(resData);
+        setData(resData.parsedData);
+        toast.success(resData.message);
         setPrompt("");
+        setModalOpen(true);
+      } else {
+        setPrompt("");
+        toast.error(resData.message);
       }
+      setLoading(false);
     } catch(err) {
       console.error("An error occured while generating your tasks =", err);
+      setLoading(false);
     }
   }
 
@@ -37,9 +58,20 @@ const AITextArea = () => {
       <Textarea placeholder='Ask AI generate tasks for you. Here is an example prompt - "Generate 5 procedural tasks for me learning python"' value={prompt} onChange={(e) => setPrompt(e.target.value)} className='mb-3' />
 
       <div className='flex gap-2'>
-        <Button className='bg-violet-700 hover:bg-violet-800 transition cursor-pointer' onClick={handleGenerate}>+ Generate Tasks</Button>
-        <Button className='bg-gray-200 hover:bg-gray-300 transition text-black cursor-pointer'>Clear</Button>
+        <Button className='bg-violet-700 hover:bg-violet-800 transition cursor-pointer' onClick={handleGenerate}>
+          {loading ?
+            (
+              <Loader className='animate-spin' />
+            )
+            :
+            (
+              <span>+ Generate Tasks</span>
+            )
+          }
+        </Button>
+        <Button className='bg-gray-200 hover:bg-gray-300 transition text-black cursor-pointer' onClick={() => setPrompt("")}>Clear</Button>
       </div>
+      <CreateList isUpdated={setListUpdated} open={modalOpen} setOpen={setModalOpen} listTitle={data?.listTitle} taskArray={data?.tasks} />
     </div>
   )
 }

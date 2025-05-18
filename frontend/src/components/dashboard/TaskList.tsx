@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { toast } from 'sonner';
 import CreateList from './CreateList';
 import { useAuth } from '@clerk/clerk-react';
 import DropDown from './DropDown';
-
+import { Button } from '../ui/button';
 
 type TaskItem = {
   taskId: number;
@@ -18,10 +19,15 @@ type GroupedTaskList = {
   tasks: TaskItem[];
 }
 
-const TaskList = () => {
+type PropTypes = {
+  listUpdated: boolean;
+  setListUpdated: Dispatch<SetStateAction<boolean>>
+}
+
+const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
 
   const [data, setData] = useState<GroupedTaskList[]>([]);
-  const [listUpdated, setListUpdated] = useState(false);
+  const [createModal, setCreateModal] = useState(false);
 
   const { getToken } = useAuth();
 
@@ -82,11 +88,11 @@ const TaskList = () => {
     <div className='shadow-lg p-4 rounded-lg bg-white'>
       <header className='flex justify-between mb-4'>
         <h3 className='text-2xl font-bold'>Your Tasks</h3>
-        <CreateList isUpdated={setListUpdated}  />
+        <Button className="cursor-pointer bg-gray-200 hover:bg-gray-300 text-black" onClick={() => setCreateModal(true)}>Create your own List</Button>
       </header>
       <section className='flex flex-wrap gap-5'>
         {data.map((value, index) => (
-          <div key={index} className='border-1 border-gray-300 rounded-md p-4 min-w-xs min-h-lh bg-white'>
+          <div key={index} className='border-1 border-gray-300 rounded-md p-4 min-w-xs max-w-md min-h-64 max-h-64 bg-white overflow-y-auto'>
             <header className='flex justify-between'>
               <h4 className='text-lg font-semibold'>{value.listTitle}</h4>
               <DropDown id={value.listId} isUpdated={setListUpdated} />
@@ -109,6 +115,7 @@ const TaskList = () => {
           </div>
         ))}
       </section>
+      <CreateList isUpdated={setListUpdated} open={createModal} setOpen={setCreateModal} />
     </div>
   )
 }

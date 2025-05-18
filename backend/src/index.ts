@@ -29,9 +29,39 @@ app.route("/task", tasksRouter);
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GEMINI_API_KEY });
 
+interface TaskResponse {
+  listTitle: string;
+  tasks: string[];
+}
+
+const parseGeminiResponse = (response: any): TaskResponse | null => {
+  try {
+    const responseText = response.text;
+
+    if(!responseText) {
+      console.error("Response text is undefined");
+      return null;
+    }
+
+    const parsed = typeof responseText === "string" ? JSON.parse(responseText) : responseText;
+    if(typeof parsed.listTitle !== "string" || !Array.isArray(parsed.tasks)) {
+      console.error("Response did not match the required format!");
+      return null;
+    }
+
+    return parsed as TaskResponse;
+  } catch(err) {
+    console.error("Failed to parse Gemini Response =", err);
+    return null;
+  }
+}
+
 app.post("/api/ai", requireAuth, async (c) => {
   try {
     const { prompt } = await c.req.json();
+    if(typeof prompt !== "string" || prompt.trim() === "") {
+      return c.json({ success: false, message: "Prompt cannot be empty!" }, 200);
+    }
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: prompt,
@@ -40,23 +70,22 @@ app.post("/api/ai", requireAuth, async (c) => {
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            listTitle: {
-              type: Type.STRING
-            },
+            listTitle: { type: Type.STRING },
             tasks: {
               type: Type.ARRAY,
-              items: {
-                type: Type.STRING
-              }
+              items: { type: Type.STRING }
             }
           }
         }
       }
     });
-    console.log(response.text);
-    console.log(typeof response.text);
+    const parsedData = parseGeminiResponse(response);
 
-    return c.json({ success: true, data: response.text }, 200);
+    if(parsedData) {
+      return c.json({ success: true, message: "Tasks generated successfully", parsedData }, 200);
+    } else {
+      return c.json({ success: false, message: "Failed to generate tasks. Try again later!" }, 500)
+    }
   } catch(err) {
     console.error("An error occured while generating response =", err);
     return c.json({ message: "Internal Server Error" }, 500);

@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { db } from "../db/db";
 import { tasksList, tasks, users } from "../db/schema";
 import { requireAuth } from "../middleware/requireAuth";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 const tasksRouter = new Hono();
 
@@ -23,7 +23,7 @@ tasksRouter.get('/all_lists', requireAuth, async (c) => {
     try {
         const { userId } = c.get('authData');
         
-        const allTasks = await db.select().from(tasksList).leftJoin(tasks, eq(tasksList.id, tasks.taskListId)).where(eq(tasksList.userId, userId)).orderBy(tasks.order);
+        const allTasks = await db.select().from(tasksList).leftJoin(tasks, eq(tasksList.id, tasks.taskListId)).where(eq(tasksList.userId, userId)).orderBy(desc(tasksList.createdAt), tasks.order);
         // console.log(allTasks);
         const grouped = allTasks.reduce<GroupedTaskList[]>((acc, row) => {
           const listId = row.tasks_lists.id;
@@ -57,34 +57,68 @@ tasksRouter.get('/all_lists', requireAuth, async (c) => {
     }
 });
 
+interface Task {
+  taskId: number;
+  taskTitle: string;
+  taskStatus: boolean | null;
+}
+
+interface TaskList {
+  listId: number;
+  listTitle: string;
+  listCreatedAt: Date | null;
+  tasks: Task[];
+}
+
 tasksRouter.get("task_list/:id", requireAuth, async (c) => {
     try {
-        const taskListId = Number(c.req.param("id"));
-        const { userId } = c.get("authData");
+      const taskListId = Number(c.req.param("id"));
+      const { userId } = c.get("authData");
 
-        if(isNaN(taskListId)) {
-            return c.json({ success: false, message: "Invalid Input" });
+      if (isNaN(taskListId)) {
+        return c.json({ success: false, message: "Invalid Input" });
+      }
+
+      const result = await db
+        .select()
+        .from(tasksList)
+        .leftJoin(tasks, eq(tasks.taskListId, taskListId))
+        .orderBy(tasks.order);
+      // console.log("result from get query =", result);
+
+      if (result.length === 0 || result[0].tasks_lists.userId !== userId) {
+        return c.json(
+          { success: false, message: "Unauthorized or not found!" },
+          404
+        );
+      }
+
+      // First, get the task list data from the first row
+      const listData: TaskList = {
+        listId: result[0].tasks_lists.id,
+        listTitle: result[0].tasks_lists.title,
+        listCreatedAt: result[0].tasks_lists.createdAt,
+        tasks: [],
+      };
+
+      // Create a Set to track which task IDs we've already processed to prevent duplicates
+      const processedTaskIds = new Set();
+
+      // Process each task, making sure we don't add duplicates
+      result.forEach((row) => {
+        // Only process if there's a task and we haven't seen this task ID before
+        if (row.tasks && row.tasks.id && !processedTaskIds.has(row.tasks.id)) {
+          processedTaskIds.add(row.tasks.id);
+
+          listData.tasks.push({
+            taskId: row.tasks.id,
+            taskTitle: row.tasks.title,
+            taskStatus: row.tasks.status,
+          });
         }
+      });
 
-        const result = await db.select().from(tasksList).leftJoin(tasks, eq(tasks.taskListId, taskListId)).orderBy(tasks.order);
-        // console.log("result from get query =", result);
-
-        if(result.length === 0 || result[0].tasks_lists.userId !== userId) {
-            return c.json({ success: false, message: "Unauthorized or not found!"}, 404);
-        }
-
-        const resultData = {
-            listId: result[0].tasks_lists.id,
-            listTitle: result[0].tasks_lists.title,
-            listCreatedAt: result[0].tasks_lists.createdAt,
-            tasks: result.filter((r) => r.tasks).map((r) => ({
-                taskId: r.tasks?.id,
-                taskTitle: r.tasks?.title,
-                taskStatus: r.tasks?.status
-            }))
-        }
-
-        return c.json({ success: true, data: resultData });
+      return c.json({ success: true, data: listData });
     } catch(err) {
         console.error("An error occured when fetching single task list =", err);
         return c.json({ message: "Internal Server Error" }, 500);

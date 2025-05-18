@@ -16,11 +16,28 @@ import { Trash } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import { toast } from "sonner";
 
-const CreateList = ({ isUpdated }: { isUpdated: Dispatch<SetStateAction<boolean>>}) => {
+type PropTypes = {
+  isUpdated: Dispatch<SetStateAction<boolean>>;
+  open: boolean;
+  setOpen: Dispatch<SetStateAction<boolean>>;
+  listTitle?: string;
+  taskArray?: string[]
+}
+
+const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropTypes) => {
 
   const { getToken } = useAuth();
   const [title, setTitle] = useState("");
   const [taskList, setTaskList] = useState([""]);
+
+  useEffect(() => {
+    if(listTitle && listTitle.trim() !== "") {
+      setTitle(listTitle);
+    }
+    if(Array.isArray(taskArray) && taskArray.length > 0) {
+      setTaskList(taskArray);
+    }
+  }, [listTitle, taskArray]);
 
   const handleTaskChange = (index: number, value: string) => {
     const updatedTaskList = [...taskList];
@@ -60,9 +77,9 @@ const CreateList = ({ isUpdated }: { isUpdated: Dispatch<SetStateAction<boolean>
       const data = await res.json();
       if(!data.success) {
         toast.error(data.message);
-        isUpdated((prev) => !prev);
       } else {
         toast.success(data.message);
+        isUpdated((prev) => !prev);
       }
     } catch(err) {
       console.error(err);  
@@ -71,11 +88,8 @@ const CreateList = ({ isUpdated }: { isUpdated: Dispatch<SetStateAction<boolean>
 
   return (
     <div>
-      <Dialog>
-        <DialogTrigger asChild>
-            <Button className="cursor-pointer bg-gray-200 hover:bg-gray-300 text-black">Create your own List</Button>
-        </DialogTrigger>
-        <DialogContent>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-h-128 overflow-y-auto">
 
           {/* Header Component */}
           <DialogHeader>
@@ -88,18 +102,17 @@ const CreateList = ({ isUpdated }: { isUpdated: Dispatch<SetStateAction<boolean>
             <label htmlFor="title">Title</label>
             <Input type="text" placeholder="Title of this list" value={title} onChange={(e) => setTitle(e.target.value)} className="selection:bg-blue-500 selection:text-white" />
           </div>
-
           <h3 className="text-lg">Add Tasks</h3>
           {taskList.map((task, index) => (
             <div key={index} className="flex w-full gap-2">
-              <Input 
+              <Input
                 type="text"
                 placeholder={`Task ${index+1}`}
                 value={task}
                 onChange={(e) => handleTaskChange(index, e.target.value)}
                 className="selection:bg-blue-500 selection:text-white"
               />
-              {index === taskList.length-1 && 
+              {index === taskList.length-1 &&
                 <Button
                   type="button"
                   variant="outline"
