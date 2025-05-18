@@ -13,7 +13,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogClose
 } from "@/components/ui/dialog"
 import { Button } from "../ui/button";
@@ -97,7 +96,7 @@ const DropDown = ({ id, isUpdated }: { id: number, isUpdated: Dispatch<SetStateA
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <EditListDialog listId={id} open={editDialog} setOpen={setEditDialog}  />
+      <EditListDialog listId={id} open={editDialog} setOpen={setEditDialog} isUpdated={isUpdated}  />
     </>
   )
 }

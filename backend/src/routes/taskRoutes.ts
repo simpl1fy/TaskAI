@@ -67,8 +67,7 @@ tasksRouter.get("task_list/:id", requireAuth, async (c) => {
         }
 
         const result = await db.select().from(tasksList).leftJoin(tasks, eq(tasks.taskListId, taskListId));
-        // TODO: remove the console.log
-        console.log("result from get query =", result);
+        // console.log("result from get query =", result);
 
         if(result.length === 0 || result[0].tasks_lists.userId !== userId) {
             return c.json({ success: false, message: "Unauthorized or not found!"}, 404);
@@ -91,6 +90,61 @@ tasksRouter.get("task_list/:id", requireAuth, async (c) => {
         return c.json({ message: "Internal Server Error" }, 500);
     }
 });
+
+tasksRouter.patch("/update_status", requireAuth, async (c) => {
+  try {
+    const { taskId, status } = await c.req.json();
+    console.log(taskId, status);
+    if (typeof taskId !== "number" || typeof status !== "boolean") {
+      return c.json({ success: false, message: "Invalid Input" }, 400);
+    }
+
+    const res = await db
+      .update(tasks)
+      .set({ status })
+      .where(eq(tasks.id, taskId));
+    // console.log(res);
+
+    if (res.rowCount && res.rowCount > 0) {
+      return c.json({ success: true, message: "Updated Successfully!" }, 200);
+    } else {
+      return c.json({ success: false, message: "Failed to update task" }, 404);
+    }
+  } catch (err) {
+    console.error("An error occured while updating task status =", err);
+    return c.json({ message: "Internal Server Error" }, 500);
+  }
+});
+
+tasksRouter.delete('/delete_task/:id', requireAuth, async (c) => {
+    try {
+        const id = Number(c.req.param("id"));
+        const { userId } = c.get("authData");
+
+        if(isNaN(id)) {
+            return c.json({ success: false, message: "Invalid Input" });
+        }
+
+        const res = await db.delete(tasks).where(eq(tasks.id, id)).returning();
+        /* FIXME:
+            checking condition for .returning()
+            if(res.length > 0) {
+                return success
+            } else {
+                return failure
+            }
+        */
+       // TODO: check with no .returning()
+        console.log("Delete result =", res);
+
+        console.log("Going to return success");
+        return c.json({ success: true, message: "Deleted Task Successfully" }, 200);
+
+    } catch(err) {
+        console.error("An error occured while deleting individual tasks =", err);
+        return c.json({ message: "Internal Server Error" });
+    }
+})
 
 tasksRouter.post('/add_list', requireAuth, async (c) => {
     try {
@@ -129,27 +183,54 @@ tasksRouter.post('/add_list', requireAuth, async (c) => {
     }
 });
 
-tasksRouter.patch("/update_status", requireAuth, async (c) => {
-    try {
-        const { taskId, status } = await c.req.json();
-        console.log(taskId, status);
-        if(typeof taskId !== "number" || typeof status !== "boolean") {
-            return c.json({ success: false, message: "Invalid Input" }, 400);
-        }
+tasksRouter.put("/update/:listId", requireAuth, async (c) => {
+  try {
+    const listId = Number(c.req.param("listId"));
+    const { userId } = c.get("authData");
 
-        const res = await db.update(tasks).set({ status }).where(eq(tasks.id, taskId));
-        // console.log(res);
+    const { listTitle, newTasks } = await c.req.json();
 
-        if(res.rowCount && res.rowCount > 0) {
-            return c.json({ success: true, message: "Updated Successfully!" }, 200);
-        } else {
-            return c.json({ success: false, message: "Failed to update task" }, 404);
-        }
-
-    } catch(err) {
-        console.error("An error occured while updating task status =", err);
-        return c.json({ message: "Internal Server Error" }, 500);
+    if(!listTitle || typeof listTitle !== "string" || listTitle.trim() === "") {
+        return c.json({ success: false, message: "List title is required!" }, 400);
     }
+
+    if(!Array.isArray(newTasks) || newTasks.some(task => !task.taskTitle || task.taskTitle.trim() === "")) {
+        return c.json({ success: false, message: "Task's cannot be empty" }, 400);
+    }
+
+    const existingList = await db.select().from(tasksList).where(eq(tasksList.id, listId));
+    if(!existingList || existingList[0].userId !== userId) {
+        return c.json({ success: false, message: "Unauthorized or list not found!" }, 403);
+    }
+    console.log("Existing List =", existingList);
+
+    const updateResponse = await db.update(tasksList).set({ title: listTitle }).where(eq(tasksList.id, listId));
+    console.log("Updated Response =", updateResponse);
+
+    const tasksToInsert = newTasks.filter((task) => !task.taskId);
+    const tasksToUpdate = newTasks.filter((task) => task.taskId);
+
+    // Insert new tasks
+    if(tasksToInsert.length > 0) {
+        const insertTasks = tasksToInsert.map((task) => ({
+            title: task.taskTitle.trim(),
+            completed: false,
+            taskListId: listId
+        }));
+
+        await db.insert(tasks).values(insertTasks);
+    }
+
+    for(const task of tasksToUpdate) {
+        await db.update(tasks).set({ title: task.taskTitle }).where(eq(tasks.id, task.taskId));
+    }
+
+    return c.json({ success: true, message: "List has been updated" }, 200);
+
+  } catch (err) {
+    console.error("An error occured while updating list =", err);
+    return c.json({ message: "Internal Server Error" }, 500);
+  }
 });
 
 tasksRouter.delete("/delete_list", requireAuth, async(c) => {
