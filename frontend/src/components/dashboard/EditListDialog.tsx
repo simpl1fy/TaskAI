@@ -179,6 +179,7 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
       setSaveLoading(false);
     } catch(err) {
       console.error("An error occured while saving =", err);
+      setSaveLoading(false);
     }
   }
 

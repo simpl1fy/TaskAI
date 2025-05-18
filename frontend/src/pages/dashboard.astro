@@ -1,22 +1,19 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import ClientList from "@/islands/ClientList";
-import AITextArea from "@/components/dashboard/AITextArea";
-import TaskList from "@/components/dashboard/TaskList";
+import ClientDashboard from "@/islands/ClientDashboard";
 ---
 
 <BaseLayout>
   <div class="p-10 bg-violet-50 h-screen">
     <header class="mb-5">
-        <h3 class="text-2xl">Dashboard</h3>
-        <p class="text-gray-700 text-md">Generate and manage your AI-powered tasks</p>
+      <h3 class="text-2xl">Dashboard</h3>
+      <p class="text-gray-700 text-md">
+        Generate and manage your AI-powered tasks
+      </p>
     </header>
 
     <section class="mb-10">
-      <AITextArea client:load />
-    </section>
-    <section class="mb-3">
-      <ClientList client:only="react" />
+      <ClientDashboard client:only="react" />
     </section>
 
     <!-- <section>

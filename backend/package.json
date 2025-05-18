@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "@clerk/backend": "^1.32.2",
+    "@google/genai": "^0.14.1",
     "@hono/clerk-auth": "^2.0.0",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.43.1",
