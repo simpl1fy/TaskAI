@@ -7,10 +7,13 @@
     "@clerk/backend": "^1.32.2",
     "@google/genai": "^0.14.1",
     "@hono/clerk-auth": "^2.0.0",
+    "@hono/swagger-ui": "^0.5.1",
+    "@hono/zod-openapi": "^0.19.6",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.43.1",
     "hono": "^4.7.9",
-    "pg": "^8.16.0"
+    "pg": "^8.16.0",
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "@types/bun": "latest",
