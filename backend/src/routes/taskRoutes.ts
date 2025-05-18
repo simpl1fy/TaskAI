@@ -23,7 +23,7 @@ tasksRouter.get('/all_lists', requireAuth, async (c) => {
     try {
         const { userId } = c.get('authData');
         
-        const allTasks = await db.select().from(tasksList).leftJoin(tasks, eq(tasksList.id, tasks.taskListId)).where(eq(tasksList.userId, userId));
+        const allTasks = await db.select().from(tasksList).leftJoin(tasks, eq(tasksList.id, tasks.taskListId)).where(eq(tasksList.userId, userId)).orderBy(tasks.order);
         // console.log(allTasks);
         const grouped = allTasks.reduce<GroupedTaskList[]>((acc, row) => {
           const listId = row.tasks_lists.id;
@@ -66,7 +66,7 @@ tasksRouter.get("task_list/:id", requireAuth, async (c) => {
             return c.json({ success: false, message: "Invalid Input" });
         }
 
-        const result = await db.select().from(tasksList).leftJoin(tasks, eq(tasks.taskListId, taskListId));
+        const result = await db.select().from(tasksList).leftJoin(tasks, eq(tasks.taskListId, taskListId)).orderBy(tasks.order);
         // console.log("result from get query =", result);
 
         if(result.length === 0 || result[0].tasks_lists.userId !== userId) {
@@ -168,9 +168,10 @@ tasksRouter.post('/add_list', requireAuth, async (c) => {
             return c.json({ success: false, message: "Failed to insert task list" });
         }
 
-        const taskRows = tasksArray.map((taskTitle: string) => ({
+        const taskRows = tasksArray.map((taskTitle: string, index) => ({
           title: taskTitle,
           taskListId: listId,
+          order: index
         }));
 
         await db.insert(tasks).values(taskRows);
@@ -212,17 +213,25 @@ tasksRouter.put("/update/:listId", requireAuth, async (c) => {
 
     // Insert new tasks
     if(tasksToInsert.length > 0) {
-        const insertTasks = tasksToInsert.map((task) => ({
+        const insertTasks = tasksToInsert.map((task, index) => ({
             title: task.taskTitle.trim(),
             completed: false,
-            taskListId: listId
+            taskListId: listId,
+            order: index
         }));
 
         await db.insert(tasks).values(insertTasks);
     }
 
-    for(const task of tasksToUpdate) {
-        await db.update(tasks).set({ title: task.taskTitle }).where(eq(tasks.id, task.taskId));
+    for (let i = 0; i < tasksToUpdate.length; i++) {
+      const task = tasksToUpdate[i];
+      await db
+        .update(tasks)
+        .set({
+          title: task.taskTitle,
+          order: i,
+        })
+        .where(eq(tasks.id, task.taskId));
     }
 
     return c.json({ success: true, message: "List has been updated" }, 200);

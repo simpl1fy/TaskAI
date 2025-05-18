@@ -21,5 +21,6 @@ export const tasks = pgTable("tasks", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   taskListId: integer("task_list_id").references(() => tasksList.id, {onDelete: 'cascade'}).notNull(),
   title: varchar("title", { length: 255 }).notNull(),
-  status: boolean().default(false)
+  status: boolean().default(false),
+  order: integer("order").notNull().default(0)
 });
