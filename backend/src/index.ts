@@ -14,12 +14,12 @@ const app = new Hono()
 
 app.get("/doc", (c) => c.json(swaggerSpec));
 
-app.get("/ui", swaggerUI({ url: '/doc' }));
+app.get("/documentation/ui", swaggerUI({ url: '/doc' }));
 
 app.use(
   "/*",
   cors({
-    origin: "http://localhost:4321",
+    origin: ["http://localhost:4321", "https://aitaskmanager01.netlify.app"],
     allowHeaders: ["x-clerk-user-id", "Content-Type", "Authorization"],
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
