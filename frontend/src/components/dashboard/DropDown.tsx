@@ -35,8 +35,10 @@ const DropDown = ({ id, isUpdated }: { id: number, isUpdated: Dispatch<SetStateA
     console.log(typeof id);
     const token = await getToken();
 
+    const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
+
     try {
-      const response = await fetch("http://localhost:3000/task/delete_list", {
+      const response = await fetch(`${baseUrl}/task/delete_list`, {
         method: "DELETE",
         headers: {
           'Content-type': "application/json",

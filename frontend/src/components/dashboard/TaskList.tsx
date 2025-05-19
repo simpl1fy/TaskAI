@@ -30,11 +30,12 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
   const [createModal, setCreateModal] = useState(false);
 
   const { getToken } = useAuth();
-
+  
   useEffect(() => {
+    const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
     const fetchTaskList = async () => {
       const fetchedToken = await getToken();
-      const response = await fetch("http://localhost:3000/task/all_lists", {
+      const response = await fetch(`${baseUrl}/task/all_lists`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${fetchedToken}`,
@@ -43,7 +44,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
       });
 
       const data = await response.json();
-
+      
       if(data.success) {
         setData(data.allTasks)
       }
@@ -61,8 +62,9 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
     try {
 
       const token = await getToken();
-
-      const response = await fetch("http://localhost:3000/task/update_status", {
+      
+      const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
+      const response = await fetch(`${baseUrl}/task/update_status`, {
         method: "PATCH",
         headers: {
           'Content-type': 'Application/json',

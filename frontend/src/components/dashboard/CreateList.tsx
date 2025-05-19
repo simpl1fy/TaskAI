@@ -65,8 +65,9 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
 
     console.log(Array.isArray(taskList));
     console.log(taskList);
+    const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
     try {
-      const res = await fetch("http://localhost:3000/task/add_list", {
+      const res = await fetch(`${baseUrl}/task/add_list`, {
         method: "POST",
         headers: {
           'Content-type': "application/json",

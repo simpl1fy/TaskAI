@@ -11,7 +11,8 @@ const { userId } = Astro.locals.auth();
 
 const UserSync = async (userId: string) => {
   try {
-    const response = await fetch("http://localhost:3000/user/sync", {
+    const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
+    const response = await fetch(`${baseUrl}/user/sync`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -49,8 +49,10 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
 
       const token = await getToken();
 
+      const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
+
       try {
-        const response = await fetch(`http://localhost:3000/task/task_list/${listId}`, {
+        const response = await fetch(`${baseUrl}/task/task_list/${listId}`, {
           method: "GET",
           headers: {
             'Content-type': 'application/json',
@@ -120,10 +122,10 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
       })
     } else {
       try {
-
+        const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
         const token = await getToken();
 
-        const response = await fetch(`http://localhost:3000/task/delete_task/${taskId}`, {
+        const response = await fetch(`${baseUrl}/task/delete_task/${taskId}`, {
           method: "DELETE",
           headers: {
             'Content-type': 'application/json',
@@ -160,8 +162,8 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
     setSaveLoading(true);
     try {
       const token = await getToken();
-
-      const response = await fetch(`http://localhost:3000/task/update/${taskListId}`, {
+      const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
+      const response = await fetch(`${baseUrl}/task/update/${taskListId}`, {
         method: "PUT",
         headers: {
           'Content-type': 'application/json',

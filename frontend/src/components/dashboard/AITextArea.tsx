@@ -25,8 +25,8 @@ const AITextArea = ({ setListUpdated }: { setListUpdated: Dispatch<SetStateActio
     setLoading(true);
     try {
       const token = await getToken();
-
-      const response = await fetch("http://localhost:3000/api/ai", {
+      const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
+      const response = await fetch(`${baseUrl}/api/ai`, {
         method: "POST",
         headers: {
           'Content-type': 'application/json',
