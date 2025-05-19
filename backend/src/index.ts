@@ -17,11 +17,11 @@ app.get("/doc", (c) => c.json(swaggerSpec));
 app.get("/documentation/ui", swaggerUI({ url: '/doc' }));
 
 app.use(
-  "/*",
+  "*",
   cors({
     origin: ["http://localhost:4321", "https://aitaskmanager01.netlify.app"],
     allowHeaders: ["x-clerk-user-id", "Content-Type", "Authorization"],
-    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
   })
 );
