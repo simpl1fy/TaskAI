@@ -7,6 +7,54 @@ import { eq } from "drizzle-orm";
 const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 const userRouter = new Hono();
 
+/**
+ * @openapi
+ * /user/sync:
+ *   post:
+ *     tags:
+ *       - User
+ *     summary: Sync user data from Clerk to the database
+ *     description: Creates a new user entry in the database if one doesn't already exist.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-clerk-user-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The Clerk user ID for identifying the authenticated user
+ *     responses:
+ *       200:
+ *         description: User synced successfully or already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Missing or invalid Clerk user ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ */
 userRouter.post('/sync', async(c) => {
     try {
         const userId = c.req.header('x-clerk-user-id');

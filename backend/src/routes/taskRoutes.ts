@@ -6,6 +6,52 @@ import { eq, desc } from "drizzle-orm";
 
 const tasksRouter = new Hono();
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     TaskItem:
+ *       type: object
+ *       properties:
+ *         taskId:
+ *           type: integer
+ *           description: Unique identifier for the task
+ *         taskTitle:
+ *           type: string
+ *           description: Title of the task
+ *         taskStatus:
+ *           type: boolean
+ *           nullable: true
+ *           description: Status of the task (true for completed, false for incomplete, null if not set)
+ *       required:
+ *         - taskId
+ *         - taskTitle
+ *     
+ *     GroupedTaskList:
+ *       type: object
+ *       properties:
+ *         listId:
+ *           type: integer
+ *           description: Unique identifier for the task list
+ *         listTitle:
+ *           type: string
+ *           description: Title of the task list
+ *         createdAt:
+ *           type: string
+ *           example: 2025-05-17 17:31:04.824857
+ *           nullable: true
+ *           description: Creation date and time of the task list in format YYYY-MM-DD HH:MM:SS.SSSSSS
+ *         tasks:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/TaskItem'
+ *           description: Array of tasks belonging to this list
+ *       required:
+ *         - listId
+ *         - listTitle
+ *         - tasks
+ */
+
 type TaskItem = {
   taskId: number;
   taskTitle: string;
@@ -19,9 +65,59 @@ type GroupedTaskList = {
   tasks: TaskItem[];
 };
 
+/**
+ * @swagger
+ * /task/all_lists:
+ *   get:
+ *     summary: Get all task lists with their tasks
+ *     tags:
+ *       - Task Lists
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of task lists with tasks
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 allTasks:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/GroupedTaskList'
+ *       400:
+ *         description: Malformed input(Missing user id)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Malformed input(Missing user id)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ */
 tasksRouter.get('/all_lists', requireAuth, async (c) => {
     try {
         const { userId } = c.get('authData');
+
+        if(!userId) {
+          return c.json({ success: false, message: "User ID not found!" }, 400);
+        }
         
         const allTasks = await db.select().from(tasksList).leftJoin(tasks, eq(tasksList.id, tasks.taskListId)).where(eq(tasksList.userId, userId)).orderBy(desc(tasksList.createdAt), tasks.order);
         // console.log(allTasks);
@@ -57,6 +153,29 @@ tasksRouter.get('/all_lists', requireAuth, async (c) => {
     }
 });
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     ErrorResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         message:
+ *           type: string
+ *           example: "Invalid Input"
+ *
+ *     TaskListResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         data:
+ *           $ref: '#/components/schemas/GroupedTaskList'
+ */
 interface Task {
   taskId: number;
   taskTitle: string;
@@ -69,7 +188,49 @@ interface TaskList {
   listCreatedAt: Date | null;
   tasks: Task[];
 }
-
+/**
+ * @swagger
+ * /task/task_list/{id}:
+ *   get:
+ *     summary: Get a specific task list with all its tasks
+ *     description: Retrieves a task list and all associated tasks by the task list ID
+ *     tags: [Task Lists]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the task list to retrieve
+ *         example: 10
+ *     responses:
+ *       200:
+ *         description: Task list successfully retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/TaskListResponse'
+ *                 - $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Task list not found or unauthorized access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ */
 tasksRouter.get("task_list/:id", requireAuth, async (c) => {
     try {
       const taskListId = Number(c.req.param("id"));
@@ -83,6 +244,7 @@ tasksRouter.get("task_list/:id", requireAuth, async (c) => {
         .select()
         .from(tasksList)
         .leftJoin(tasks, eq(tasks.taskListId, taskListId))
+        .where(eq(tasksList.id, taskListId))
         .orderBy(tasks.order);
       // console.log("result from get query =", result);
 
@@ -125,19 +287,95 @@ tasksRouter.get("task_list/:id", requireAuth, async (c) => {
     }
 });
 
+
+/**
+ * @swagger
+ * /task/update_status:
+ *   patch:
+ *     summary: Update the status of a task
+ *     tags:
+ *       - Tasks
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - taskId
+ *               - status
+ *             properties:
+ *               taskId:
+ *                 type: integer
+ *                 example: 42
+ *               status:
+ *                 type: boolean
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: Task status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   exmaple: true
+ *                 message:
+ *                   type: string
+ *                   example: "Updated Successfully!"
+ *       400:
+ *         description: Invalid input (wrong types or missing fields)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid Input!"
+ *       404:
+ *         description: Task not found or failed to update
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to update task"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   exmaple: "Internal Server Error"
+ */
 tasksRouter.patch("/update_status", requireAuth, async (c) => {
   try {
     const { taskId, status } = await c.req.json();
     console.log(taskId, status);
     if (typeof taskId !== "number" || typeof status !== "boolean") {
-      return c.json({ success: false, message: "Invalid Input" }, 400);
+      return c.json({ success: false, message: "Invalid Input!" }, 400);
     }
 
     const res = await db
       .update(tasks)
       .set({ status })
       .where(eq(tasks.id, taskId));
-    // console.log(res);
 
     if (res.rowCount && res.rowCount > 0) {
       return c.json({ success: true, message: "Updated Successfully!" }, 200);
@@ -150,36 +388,171 @@ tasksRouter.patch("/update_status", requireAuth, async (c) => {
   }
 });
 
+/**
+ * @swagger
+ * /task/delete_task/{id}:
+ *   delete:
+ *     summary: Delete a task by ID
+ *     tags:
+ *       - Tasks
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the task to delete
+ *     responses:
+ *       200:
+ *         description: Task deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       404:
+ *         description: Task not found or already deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Invalid task ID input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+
 tasksRouter.delete('/delete_task/:id', requireAuth, async (c) => {
     try {
-        const id = Number(c.req.param("id"));
-        const { userId } = c.get("authData");
+      const id = Number(c.req.param("id"));
+      // const { userId } = c.get("authData");
 
-        if(isNaN(id)) {
-            return c.json({ success: false, message: "Invalid Input" });
-        }
+      if (isNaN(id)) {
+        return c.json({ success: false, message: "Invalid Input" });
+      }
 
-        const res = await db.delete(tasks).where(eq(tasks.id, id)).returning();
-        /* FIXME:
-            checking condition for .returning()
-            if(res.length > 0) {
-                return success
-            } else {
-                return failure
-            }
-        */
-       // TODO: check with no .returning()
-        console.log("Delete result =", res);
+      // Check if task exists and belongs to the user
+      // const taskWithList = await db.query.tasks.findFirst({
+      //   where: (tasks, { eq }) => eq(tasks.id, id),
+      //   with: {
+      //     taskList: {
+      //       columns: { userId: true },
+      //     },
+      //   },
+      // });
 
-        console.log("Going to return success");
-        return c.json({ success: true, message: "Deleted Task Successfully" }, 200);
+      // console.log(taskWithList)
 
+      // if (!taskWithList || taskWithList.taskList.userId !== userId) {
+      //   return c.json(
+      //     { success: false, message: "Task not found or access denied" },
+      //     404
+      //   );
+      // }
+
+      const res = await db.delete(tasks).where(eq(tasks.id, id)).returning();
+      if (res.length == 0) {
+        return c.json(
+          { success: false, message: "Task not found or already deleted" },
+          404
+        );
+      }
+      return c.json(
+        { success: true, message: "Deleted Task Successfully" },
+        200
+      );
     } catch(err) {
         console.error("An error occured while deleting individual tasks =", err);
         return c.json({ message: "Internal Server Error" });
     }
-})
+});
 
+/**
+ * @swagger
+ * /task/add_list:
+ *   post:
+ *     summary: Add a new task list with tasks
+ *     tags:
+ *       - Task Lists
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - tasksArray
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: "My New Task List"
+ *               tasksArray:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["Buy groceries", "Walk the dog"]
+ *     responses:
+ *       200:
+ *         description: Task list and tasks added successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Task List added successfully
+ *       400:
+ *         description: Validation error (missing title or tasks)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object*
+*/
 tasksRouter.post('/add_list', requireAuth, async (c) => {
     try {
         const { userId } = c.get('authData');
@@ -189,7 +562,7 @@ tasksRouter.post('/add_list', requireAuth, async (c) => {
             return c.json({ success: false, message: "Title is required!" });
         }
 
-        if (tasksArray.length === 0 || !Array.isArray(tasksArray)) {
+        if (!Array.isArray(tasksArray) || tasksArray.length === 0) {
           return c.json({ success: false, message: "Tasks are required!" });
         }
 
@@ -217,6 +590,100 @@ tasksRouter.post('/add_list', requireAuth, async (c) => {
         return c.json({ message: "Internal Server Error" }, 500);
     }
 });
+
+
+/**
+ * @openapi
+ * /task/update/{listId}:
+ *   put:
+ *     summary: Update a task list and its tasks
+ *     tags:
+ *       - Task Lists
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: listId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the task list to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - listTitle
+ *               - newTasks
+ *             properties:
+ *               listTitle:
+ *                 type: string
+ *                 example: "Updated Task List Title"
+ *               newTasks:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - taskTitle
+ *                   properties:
+ *                     taskId:
+ *                       type: integer
+ *                       description: If present, updates an existing task
+ *                       example: 42
+ *                     taskTitle:
+ *                       type: string
+ *                       example: "Updated Task Title"
+ *     responses:
+ *       200:
+ *         description: Task list and tasks updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: List has been updated
+ *       400:
+ *         description: Bad input (empty title or tasks)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *       403:
+ *         description: Unauthorized or task list not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                   example: Unauthorized or list not found!
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Internal Server Error
+ */
 
 tasksRouter.put("/update/:listId", requireAuth, async (c) => {
   try {
@@ -249,7 +716,7 @@ tasksRouter.put("/update/:listId", requireAuth, async (c) => {
     if(tasksToInsert.length > 0) {
         const insertTasks = tasksToInsert.map((task, index) => ({
             title: task.taskTitle.trim(),
-            completed: false,
+            status: false,
             taskListId: listId,
             order: index
         }));
@@ -276,6 +743,65 @@ tasksRouter.put("/update/:listId", requireAuth, async (c) => {
   }
 });
 
+/**
+ * @swagger
+ * /task/delete_list:
+ *   delete:
+ *     summary: Delete a task list by ID
+ *     tags:
+ *       - Task Lists
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - taskListId
+ *             properties:
+ *               taskListId:
+ *                 type: integer
+ *                 example: 5
+ *     responses:
+ *       200:
+ *         description: Task list deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: List deleted successfully
+ *       400:
+ *         description: Invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Invalid Input
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Internal Server Error
+ */
 tasksRouter.delete("/delete_list", requireAuth, async(c) => {
     try {
         const { taskListId } = await c.req.json();

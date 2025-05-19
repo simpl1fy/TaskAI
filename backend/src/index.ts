@@ -6,8 +6,15 @@ import tasksRouter from './routes/taskRoutes';
 import 'dotenv/config';
 import { GoogleGenAI, Type } from '@google/genai';
 import { requireAuth } from './middleware/requireAuth';
+import { swaggerUI, SwaggerUI } from '@hono/swagger-ui';
+
+import { swaggerSpec } from './lib/swagger';
 
 const app = new Hono()
+
+app.get("/doc", (c) => c.json(swaggerSpec));
+
+app.get("/ui", swaggerUI({ url: '/doc' }));
 
 app.use(
   "/*",
@@ -19,6 +26,24 @@ app.use(
   })
 );
 
+/**
+ * @openapi
+ * /:
+ *   get:
+ *     summary: Say Hello
+ *     tags:
+ *       - Hello
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
 app.get('/', (c) => {
   return c.text('Hello Hono!')
 })
@@ -56,11 +81,73 @@ const parseGeminiResponse = (response: any): TaskResponse | null => {
   }
 }
 
+
+/**
+ * @openapi
+ * /api/ai:
+ *   post:
+ *     summary: Generate tasks from a given prompt using AI
+ *     tags:
+ *       - Gemini
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               prompt:
+ *                 type: string
+ *                 example: "Plan my day"
+ *     responses:
+ *       200:
+ *         description: AI generated tasks successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 parsedData:
+ *                   type: object
+ *                   properties:
+ *                     listTitle:
+ *                       type: string
+ *                     tasks:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *       400:
+ *         description: Prompt is empty or not a string
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: 
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
 app.post("/api/ai", requireAuth, async (c) => {
   try {
     const { prompt } = await c.req.json();
     if(typeof prompt !== "string" || prompt.trim() === "") {
-      return c.json({ success: false, message: "Prompt cannot be empty!" }, 200);
+      return c.json({ success: false, message: "Prompt cannot be empty!" }, 400);
     }
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
