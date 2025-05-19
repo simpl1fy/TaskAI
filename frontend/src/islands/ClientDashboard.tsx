@@ -8,12 +8,14 @@ const ClientDashboard = () => {
   const [isUpdated, setIsUpdated] = useState(false);
   return (
     <ClerkProviderWrapper>
-      <section className='mb-5'>
-        <AITextArea setListUpdated={setIsUpdated} />
-      </section>
-      <section>
-        <TaskList listUpdated={isUpdated} setListUpdated={setIsUpdated}  />
-      </section>
+      <div className='bg-violet-100 p-5'>
+        <section className='mb-5'>
+          <AITextArea setListUpdated={setIsUpdated} />
+        </section>
+        <section>
+          <TaskList listUpdated={isUpdated} setListUpdated={setIsUpdated}  />
+        </section>
+      </div>
     </ClerkProviderWrapper>
   )
 }
