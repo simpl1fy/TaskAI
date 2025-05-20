@@ -15,6 +15,7 @@ import { Input } from "../ui/input";
 import { Trash } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import { toast } from "sonner";
+import { LoaderCircle } from "lucide-react";
 
 type PropTypes = {
   isUpdated: Dispatch<SetStateAction<boolean>>;
@@ -29,6 +30,7 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
   const { getToken } = useAuth();
   const [title, setTitle] = useState("");
   const [taskList, setTaskList] = useState([""]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if(listTitle && listTitle.trim() !== "") {
@@ -56,6 +58,7 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
 
   const handleSubmit = async () => {
 
+    setLoading(true);
     const fetchedToken = await getToken();
 
     if(!fetchedToken) {
@@ -82,8 +85,11 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
         toast.success(data.message);
         isUpdated((prev) => !prev);
       }
+      setLoading(false);
     } catch(err) {
       console.error(err);  
+      toast.error("Failed to create list!");
+      setLoading(false);
     }
   }
 
@@ -141,9 +147,19 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
             <DialogClose asChild>
               <Button variant="destructive" className="cursor-pointer" onClick={() => {setTaskList([""]); setTitle("")}}>Close</Button>
             </DialogClose>
-            <DialogClose asChild>
-              <Button type="button" variant="default" className="bg-green-600 hover:bg-green-700 cursor-pointer" onClick={handleSubmit}>Save</Button>
-            </DialogClose>
+            <Button type="button" variant="default" disabled={loading} className="bg-green-600 hover:bg-green-700 cursor-pointer" onClick={handleSubmit}>
+              {loading ?
+                (
+                  <>
+                    <LoaderCircle className="animate-spin" />
+                  </>
+                )
+                :
+                (
+                  <>Save</>
+                )
+              }
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

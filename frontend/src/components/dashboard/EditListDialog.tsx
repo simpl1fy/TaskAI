@@ -13,8 +13,8 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useAuth } from "@clerk/clerk-react";
 import { toast } from "sonner";
-import { CirclePlus, Trash2 } from "lucide-react";
-import { Loader } from "lucide-react";
+import { CirclePlus, LoaderCircle, Trash2 } from "lucide-react";
+import { Skeleton } from "../ui/skeleton";
 
 type PropTypes = {
   listId: number;
@@ -42,11 +42,13 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
 
   const [data, setData] = useState<TaskList>();
   const [saveLoading, setSaveLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
 
   useEffect(() => {
     
     const fetchData = async () => {
-
+      setDataLoading(true);
       const token = await getToken();
 
       const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
@@ -64,10 +66,12 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
           // console.log(data.data);
           setData(data.data);
         } else {
-          alert("Failed to fetch data");
+          toast.error("Failed to fetch list. Please try again later");
         }
+        setDataLoading(false);
       } catch(err) {
         console.error(err);
+        setDataLoading(false);
       }
     }
     if(open && listId) {
@@ -121,6 +125,7 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
         };
       })
     } else {
+      setDeleteLoading(true);
       try {
         const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
         const token = await getToken();
@@ -151,8 +156,10 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
         } else {
           toast.error("Failed to delete. Please try again later!");
         }
+        setDeleteLoading(false);
       } catch(err) {
         console.error("An error occured while deleting tasks =", err);
+        setDeleteLoading(false);
         return;
       }
     }
@@ -193,27 +200,74 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
           <DialogTitle>Edit your task</DialogTitle>
           <DialogDescription>Edit your task, add more or change the content</DialogDescription>
         </DialogHeader>
-        <section className="flex flex-col">
-          <h4 className="text-lg font-semibold">Title</h4>
-          <Input type="text" className="selection:bg-blue-500 selection:text-white" value={data?.listTitle} onChange={(e) => handleTitleChange(e.target.value)} />
-        </section>
-        <h4 className="text-lg font-semibold">Tasks</h4>
-        {data?.tasks.map((value, index) => (
-          <span key={index} className="flex w-full gap-2">
-            <Input type="text" className="selection:bg-blue-500 selection:text-white" value={value.taskTitle} onChange={(e) => handleTaskTitleChange(index, e.target.value)} placeholder="Enter task" />
-            <Button size="icon" variant="ghost" className="cursor-pointer" onClick={() => handleAddTask(index)}><CirclePlus /></Button>
-            <Button size="icon" variant="ghost" className="cursor-pointer" onClick={() => handleDelete(index, value.taskId)}><Trash2 className="text-red-600" /></Button>
-          </span>
-        ))}
+        {dataLoading ?
+          (
+            <>
+              <div>
+                <Skeleton className="h-4 w-full rounded-lg" />
+                <div className="flex flex-col space-y-2">
+                  <Skeleton className="h-4 w-full rounded-md" />
+                  <Skeleton className="h-4 w-full rounded-md" />
+                  <Skeleton className="h-4 w-full rounded-md" />
+                  <Skeleton className="h-4 w-full rounded-md" />
+                </div>
+              </div>
+            </>
+          )
+          :
+          (
+            <>
+              <section className="flex flex-col">
+                <h4 className="text-lg font-semibold">Title</h4>
+                <Input type="text" className="selection:bg-blue-500 selection:text-white" value={data?.listTitle} onChange={(e) => handleTitleChange(e.target.value)} />
+              </section>
+              <section>
+                <h4 className="text-lg font-semibold">Tasks</h4>
+                {data?.tasks.map((value, index) => (
+                  <span key={index} className="flex w-full gap-2 mb-2">
+                    <Input type="text" className="selection:bg-blue-500 selection:text-white" value={value.taskTitle} onChange={(e) => handleTaskTitleChange(index, e.target.value)} placeholder="Enter task" />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="cursor-pointer"
+                      onClick={() => handleAddTask(index)}
+                      disabled={deleteLoading}
+                    >
+                      <CirclePlus />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="cursor-pointer"
+                      onClick={() => handleDelete(index, value.taskId)}
+                      disabled={deleteLoading}
+                    >
+                      {
+                        deleteLoading ?
+                        (
+                          <LoaderCircle className="animate-spin" />
+                        )
+                        :
+                        (
+                          <Trash2 className="text-red-600" />
+                        )
+                      }
+                    </Button>
+                  </span>
+                ))}
+              </section>
+            </>
+          )
+        }
         <DialogFooter>
           <DialogClose asChild>
             <Button className="bg-red-600 text-white hover:bg-red-700 cursor-pointer">Cancel</Button>
           </DialogClose>
           {data?.listId && 
-            <Button className="bg-green-600 hover:bg-green-700 transition cursor-pointer" onClick={() => handleSave(data.listId)}>
+            <Button className="bg-green-600 hover:bg-green-700 transition cursor-pointer" onClick={() => handleSave(data.listId)} disabled={saveLoading}>
               {saveLoading ? 
                 (
-                  <Loader className="animate-spin" />
+                  <LoaderCircle className="animate-spin" />
                 )
               : 
               (

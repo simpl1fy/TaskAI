@@ -5,6 +5,7 @@ import CreateList from './CreateList';
 import { useAuth } from '@clerk/clerk-react';
 import DropDown from './DropDown';
 import { Button } from '../ui/button';
+import { Skeleton } from '../ui/skeleton';
 
 type TaskItem = {
   taskId: number;
@@ -28,25 +29,35 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
 
   const [data, setData] = useState<GroupedTaskList[]>([]);
   const [createModal, setCreateModal] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
 
   const { getToken } = useAuth();
   
   useEffect(() => {
-    const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
     const fetchTaskList = async () => {
-      const fetchedToken = await getToken();
-      const response = await fetch(`${baseUrl}/task/all_lists`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${fetchedToken}`,
-          'Content-type': "application/json"
-        }
-      });
+      try {
+        setDataLoading(true);
+        const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
+        const fetchedToken = await getToken();
+        const response = await fetch(`${baseUrl}/task/all_lists`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${fetchedToken}`,
+            'Content-type': "application/json"
+          }
+        });
 
-      const data = await response.json();
-      
-      if(data.success) {
-        setData(data.allTasks)
+        const data = await response.json();
+        
+        if(data.success) {
+          setData(data.allTasks)
+        } else {
+          toast.error("Failed to fetch your tasks. Please try again later!");
+        }
+        setDataLoading(false);
+      } catch(err) {
+        console.error("An error occured while fetching tasks =", err);
+        setDataLoading(false);
       }
     }
     fetchTaskList();
@@ -75,11 +86,11 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
 
       const data = await response.json();
       if(data.success) {
-        toast(data.message);
+        toast.success(data.message);
       } else {
         task.taskStatus = !task.taskStatus;
         setData(newData);
-        alert(data.message);
+        toast.error("Failed to update task. Please try again later!");
       }
     } catch(err) {
       console.error(err);
@@ -98,40 +109,58 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
         </Button>
       </header>
   
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {data.map((value, index) => (
-          <div
-            key={index}
-            className="border border-gray-300 rounded-md p-4 bg-white overflow-y-auto min-h-64 max-h-64"
-          >
-            <header className="flex justify-between mb-2">
-              <h4 className="text-base sm:text-lg font-semibold">
-                {value.listTitle}
-              </h4>
-              <DropDown id={value.listId} isUpdated={setListUpdated} />
-            </header>
-            {value.tasks.map((tValue, tIndex) => (
-              <label
-                key={tIndex}
-                className="flex items-center gap-2 mb-2 cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={tValue.taskStatus}
-                  onChange={() => handleChange(index, tIndex, tValue.taskId)}
-                />
-                <span
-                  className={`text-sm sm:text-base ${
-                    tValue.taskStatus ? 'line-through text-gray-400' : 'text-gray-800'
-                  }`}
-                >
-                  {tValue.taskTitle}
-                </span>
-              </label>
+      {dataLoading ?
+        (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="rounded-2xl shadow-sm border p-4">
+                <Skeleton className="w-full aspect-square rounded-xl" />
+                <div className="space-y-2 mt-4">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
             ))}
           </div>
-        ))}
-      </section>
+        )
+        :
+        (
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {data.map((value, index) => (
+              <div
+                key={index}
+                className="border border-gray-300 rounded-md p-4 bg-white overflow-y-auto min-h-64 max-h-64"
+              >
+                <header className="flex justify-between mb-2">
+                  <h4 className="text-base sm:text-lg font-semibold">
+                    {value.listTitle}
+                  </h4>
+                  <DropDown id={value.listId} isUpdated={setListUpdated} />
+                </header>
+                {value.tasks.map((tValue, tIndex) => (
+                  <label
+                    key={tIndex}
+                    className="flex items-center gap-2 mb-2 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={tValue.taskStatus}
+                      onChange={() => handleChange(index, tIndex, tValue.taskId)}
+                    />
+                    <span
+                      className={`text-sm sm:text-base ${
+                        tValue.taskStatus ? 'line-through text-gray-400' : 'text-gray-800'
+                      }`}
+                    >
+                      {tValue.taskTitle}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            ))}
+          </section>
+        )
+      }
   
       <CreateList
         isUpdated={setListUpdated}

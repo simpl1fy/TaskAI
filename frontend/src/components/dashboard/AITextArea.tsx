@@ -3,7 +3,7 @@ import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { useAuth } from '@clerk/clerk-react';
 import CreateList from './CreateList';
-import { Loader } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Dispatch, SetStateAction } from 'react';
 
@@ -66,9 +66,10 @@ const AITextArea = ({ setListUpdated }: { setListUpdated: Dispatch<SetStateActio
         <Button
           className="bg-violet-700 hover:bg-violet-800 transition cursor-pointer w-full sm:w-auto"
           onClick={handleGenerate}
+          disabled={loading}
         >
           {loading ? (
-            <Loader className="animate-spin" />
+            <LoaderCircle className="animate-spin" />
           ) : (
             <span>+ Generate Tasks</span>
           )}
