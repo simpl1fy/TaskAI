@@ -160,7 +160,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
               </div>
             ))}
           </section>
-          <p className='text-sm text-gray-700'>No Task Lists created yet. Create a list yourself or use AI to generate one.</p>
+          {data.length === 0 && <p className='text-sm text-gray-700'>No Task Lists created yet. Create a list yourself or use AI to generate one.</p>}
           </>
         )
       }
