@@ -141,7 +141,6 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
         const data = await response.json();
 
         if(data.success) {
-          isUpdated(prev => !prev);
           setData(prev => {
             if(!prev) return prev;
             const updatedTasks = [...prev.tasks];
@@ -157,10 +156,10 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
           toast.error("Failed to delete. Please try again later!");
         }
         setDeleteLoading(false);
+        // isUpdated(prev => !prev);
       } catch(err) {
         console.error("An error occured while deleting tasks =", err);
         setDeleteLoading(false);
-        return;
       }
     }
   }
@@ -241,6 +240,7 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
                       className="cursor-pointer"
                       onClick={() => handleDelete(index, value.taskId)}
                       disabled={deleteLoading}
+                      type="button"
                     >
                       <Trash2 className="text-red-600" />
                     </Button>
@@ -252,7 +252,7 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
         }
         <DialogFooter>
           <DialogClose asChild>
-            <Button className="bg-red-600 text-white hover:bg-red-700 cursor-pointer">Cancel</Button>
+            <Button className="bg-red-600 text-white hover:bg-red-700 cursor-pointer" onClick={() => isUpdated(prev => !prev)}>Cancel</Button>
           </DialogClose>
           {data?.listId && 
             <Button className="bg-green-600 hover:bg-green-700 transition cursor-pointer" onClick={() => handleSave(data.listId)} disabled={saveLoading}>
