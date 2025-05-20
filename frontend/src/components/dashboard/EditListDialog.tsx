@@ -242,16 +242,7 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
                       onClick={() => handleDelete(index, value.taskId)}
                       disabled={deleteLoading}
                     >
-                      {
-                        deleteLoading ?
-                        (
-                          <LoaderCircle className="animate-spin" />
-                        )
-                        :
-                        (
-                          <Trash2 className="text-red-600" />
-                        )
-                      }
+                      <Trash2 className="text-red-600" />
                     </Button>
                   </span>
                 ))}

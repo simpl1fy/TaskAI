@@ -84,6 +84,7 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
       } else {
         toast.success(data.message);
         isUpdated((prev) => !prev);
+        setOpen(false);
       }
       setLoading(false);
     } catch(err) {
