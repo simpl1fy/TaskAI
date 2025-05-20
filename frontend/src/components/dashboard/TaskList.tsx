@@ -125,8 +125,9 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
         )
         :
         (
+          <>
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {data.map((value, index) => (
+            {data.length > 0 && data.map((value, index) => (
               <div
                 key={index}
                 className="border border-gray-300 rounded-md p-4 bg-white overflow-y-auto min-h-64 max-h-64"
@@ -159,6 +160,8 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
               </div>
             ))}
           </section>
+          <p className='text-sm text-gray-700'>No Task Lists created yet. Create a list yourself or use AI to generate one.</p>
+          </>
         )
       }
   
