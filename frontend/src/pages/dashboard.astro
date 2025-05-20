@@ -1,7 +1,13 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ClientDashboard from "@/islands/ClientDashboard";
+const { userId } = Astro.locals.auth();
+
+if(!userId) {
+  return Astro.redirect('/');
+}
 ---
+
 
 <BaseLayout
   title="User Dashboard | Use AI to generate tasks | Create & Manage your tasks"
