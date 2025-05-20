@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import Navbar from "@/components/Navbar.astro";
 import { Toaster } from "@/components/ui/sonner";
+const { title, description } = Astro.props;
 ---
 
 <html lang="en">
@@ -17,7 +18,8 @@ import { Toaster } from "@/components/ui/sonner";
         font-family: "Lexend", sans-serif;
       }
     </style>
-    <title>Astro</title>
+    <title>{title}</title>
+    <meta name="description" content={description} />
   </head>
   <body>
     <Navbar />
