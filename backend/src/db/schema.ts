@@ -13,6 +13,7 @@ export const tasksList = pgTable("tasks_lists", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userId: varchar("user_id").references(() => users.id, {onDelete: 'cascade'}).notNull(),
   title: varchar("title", { length: 255 }).notNull(),
+  category: varchar("category", { length: 255}).notNull().default("Default"),
   createdAt: timestamp("created_at").defaultNow()
 });
 
