@@ -120,10 +120,6 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
     })
   }
 
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
-
   const handleDelete = async (index: number, taskId: number | null | undefined) => {
     if(taskId === null) {
       setData(prev => {
@@ -131,9 +127,14 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
         const updatedTasks = [...prev.tasks];
         updatedTasks.splice(index, 1);
 
+        const reOrderedTasks = updatedTasks.map((task, i) => ({
+          ...task,
+          taskOrder: i
+        }));
+
         return {
           ...prev,
-          tasks: updatedTasks
+          tasks: reOrderedTasks
         };
       })
     } else {
@@ -158,9 +159,14 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
             const updatedTasks = [...prev.tasks];
             updatedTasks.splice(index, 1);
 
+            const reOrderedTasks = updatedTasks.map((task, i) => ({
+              ...task,
+              taskOrder: i
+            }))
+
             return {
               ...prev,
-              tasks: updatedTasks
+              tasks: reOrderedTasks
             };
           })
           toast.success(data.message);
