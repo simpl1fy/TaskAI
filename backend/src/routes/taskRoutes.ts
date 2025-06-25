@@ -718,11 +718,11 @@ tasksRouter.put("/update/:listId", requireAuth, async (c) => {
 
     // Insert new tasks
     if(tasksToInsert.length > 0) {
-        const insertTasks = tasksToInsert.map((task, index) => ({
+        const insertTasks = tasksToInsert.map((task, _) => ({
             title: task.taskTitle.trim(),
             status: false,
             taskListId: listId,
-            order: index  // FIXME: Update the order to be how the task was added
+            order: task.taskOrder
         }));
 
         await db.insert(tasks).values(insertTasks);
@@ -734,7 +734,7 @@ tasksRouter.put("/update/:listId", requireAuth, async (c) => {
         .update(tasks)
         .set({
           title: task.taskTitle,
-          order: i,
+          order: task.taskOrder,
         })
         .where(eq(tasks.id, task.taskId));
     }
