@@ -6,6 +6,7 @@ import { useAuth } from '@clerk/clerk-react';
 import DropDown from './DropDown';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
+import Masonry from "react-masonry-css";
 
 type TaskItem = {
   taskId: number;
@@ -97,6 +98,13 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
     }
   }
 
+  const breakPointColumnsObj = {
+    default: 4,
+    1100: 3,
+    700: 2,
+    500: 1
+  }
+
   return (
     <div className="shadow-lg p-4 sm:p-6 rounded-lg bg-white w-full shadow-md">
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
@@ -125,43 +133,47 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
         )
         :
         (
-          <>
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {data.length > 0 && data.map((value, index) => (
-              <div
-                key={index}
-                className="border rounded-md p-4 bg-white overflow-y-auto h-64 shadow-md"
-              >
-                <header className="flex justify-between mb-2">
-                  <h4 className="text-base sm:text-lg font-semibold">
-                    {value.listTitle}
-                  </h4>
-                  <DropDown id={value.listId} isUpdated={setListUpdated} />
-                </header>
-                {value.tasks.map((tValue, tIndex) => (
-                  <label
-                    key={tIndex}
-                    className="flex items-center gap-2 mb-2 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={tValue.taskStatus}
-                      onChange={() => handleChange(index, tIndex, tValue.taskId)}
-                    />
-                    <span
-                      className={`text-sm sm:text-base ${
-                        tValue.taskStatus ? 'line-through text-gray-400' : 'text-gray-800'
-                      }`}
+          <div>
+            <Masonry 
+              breakpointCols={breakPointColumnsObj}
+              className="flex w-auto -ml-4"
+              columnClassName="pl-4 bg-clip-padding"
+            >
+              {data.length > 0 && data.map((value, index) => (
+                <div
+                  key={index}
+                  className="border rounded-md p-4 bg-white overflow-y-auto min-h-fit max-h-90 min-w-50 shadow-md mb-5"
+                >
+                  <header className="flex justify-between mb-2">
+                    <h4 className="text-base sm:text-lg font-semibold">
+                      {value.listTitle}
+                    </h4>
+                    <DropDown id={value.listId} isUpdated={setListUpdated} />
+                  </header>
+                  {value.tasks.map((tValue, tIndex) => (
+                    <label
+                      key={tIndex}
+                      className="flex items-center gap-2 mb-2 cursor-pointer"
                     >
-                      {tValue.taskTitle}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            ))}
-          </section>
-          {data.length === 0 && <p className='text-sm text-gray-700'>No task lists created yet. Create a list yourself or use AI to generate one.</p>}
-          </>
+                      <input
+                        type="checkbox"
+                        checked={tValue.taskStatus}
+                        onChange={() => handleChange(index, tIndex, tValue.taskId)}
+                      />
+                      <span
+                        className={`text-sm sm:text-base ${
+                          tValue.taskStatus ? 'line-through text-gray-400' : 'text-gray-800'
+                        }`}
+                      >
+                        {tValue.taskTitle}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              ))}
+            </Masonry>
+            {data.length === 0 && <p className='text-sm text-gray-700'>No task lists created yet. Create a list yourself or use AI to generate one.</p>}
+          </div>
         )
       }
   
