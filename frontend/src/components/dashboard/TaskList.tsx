@@ -98,7 +98,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
   }
 
   return (
-    <div className="shadow-lg p-4 sm:p-6 rounded-lg bg-white w-full max-w-6xl mx-auto">
+    <div className="shadow-lg p-4 sm:p-6 rounded-lg bg-white w-full shadow-md">
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <h3 className="text-xl sm:text-2xl font-bold">Your Tasks</h3>
         <Button
@@ -130,7 +130,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
             {data.length > 0 && data.map((value, index) => (
               <div
                 key={index}
-                className="border border-gray-300 rounded-md p-4 bg-white overflow-y-auto min-h-64 max-h-64"
+                className="border rounded-md p-4 bg-white overflow-y-auto h-64 shadow-md"
               >
                 <header className="flex justify-between mb-2">
                   <h4 className="text-base sm:text-lg font-semibold">
@@ -160,7 +160,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
               </div>
             ))}
           </section>
-          {data.length === 0 && <p className='text-sm text-gray-700'>No Task Lists created yet. Create a list yourself or use AI to generate one.</p>}
+          {data.length === 0 && <p className='text-sm text-gray-700'>No task lists created yet. Create a list yourself or use AI to generate one.</p>}
           </>
         )
       }

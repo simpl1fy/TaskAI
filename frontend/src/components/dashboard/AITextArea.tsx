@@ -54,7 +54,7 @@ const AITextArea = ({ setListUpdated }: { setListUpdated: Dispatch<SetStateActio
   }
 
   return (
-    <div className="border border-gray-200 rounded-md p-5 bg-white w-full max-w-6xl mx-auto">
+    <div className="border border-gray-200 rounded-md p-5 bg-white w-full shadow-md">
       <Textarea
         placeholder='Ask AI to generate tasks for you. Example: "Generate 5 procedural tasks for learning Python."'
         value={prompt}
