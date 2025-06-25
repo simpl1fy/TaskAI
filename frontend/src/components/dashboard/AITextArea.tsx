@@ -23,6 +23,11 @@ const AITextArea = ({ setListUpdated }: { setListUpdated: Dispatch<SetStateActio
 
   const handleGenerate = async() => {
     setLoading(true);
+    if(prompt.length < 0) {
+      toast.error("Prompt cannot be empty!");
+      setLoading(false);
+      return;
+    }
     try {
       const token = await getToken();
       const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
