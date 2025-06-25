@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { useAuth } from '@clerk/clerk-react';
 import CreateList from './CreateList';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Command, CornerDownLeft, PlusIcon, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Dispatch, SetStateAction } from 'react';
 
@@ -58,6 +58,27 @@ const AITextArea = ({ setListUpdated }: { setListUpdated: Dispatch<SetStateActio
     }
   }
 
+  const handleClear = () => setPrompt("");
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if(event.ctrlKey && event.key === "Enter") {
+      event.preventDefault();
+      handleGenerate();
+    }
+    else if(event.key === "Escape") {
+      handleClear();
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+  
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    }
+  }, []);
+  
+
   return (
     <div className="border border-gray-200 rounded-md p-5 bg-white w-full shadow-md">
       <Textarea
@@ -76,15 +97,15 @@ const AITextArea = ({ setListUpdated }: { setListUpdated: Dispatch<SetStateActio
           {loading ? (
             <LoaderCircle className="animate-spin" />
           ) : (
-            <span>+ Generate Tasks</span>
+            <span className='flex gap-4 items-center'>+ Generate Tasks <kbd className='text-xs flex items-center gap-1'><Command className='size-3' /><PlusIcon className='size-3' /><CornerDownLeft className='size-3' /></kbd></span>
           )}
         </Button>
   
         <Button
           className="bg-gray-200 hover:bg-gray-300 transition text-black cursor-pointer w-full sm:w-auto"
-          onClick={() => setPrompt("")}
+          onClick={handleClear}
         >
-          Clear
+          <span className='felx gap-4 items-center'>Clear <kbd className='text-xs'>esc</kbd></span>
         </Button>
       </div>
   

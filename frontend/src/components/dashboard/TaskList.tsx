@@ -7,6 +7,7 @@ import DropDown from './DropDown';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
 import Masonry from "react-masonry-css";
+import { Command } from 'lucide-react';
 
 type TaskItem = {
   taskId: number;
@@ -98,6 +99,23 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
     }
   }
 
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if(event.ctrlKey && event.code === "KeyK") {
+      event.preventDefault();
+      setCreateModal(true);
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+  
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+
+    }
+  }, []);
+  
+
   const breakPointColumnsObj = {
     default: 4,
     1100: 3,
@@ -113,7 +131,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
           className="cursor-pointer bg-gray-200 hover:bg-gray-300 text-black w-full sm:w-auto"
           onClick={() => setCreateModal(true)}
         >
-          Create your own List
+          <span className="flex items-center gap-4">Create your own List<kbd className='text-sm flex items-center'><Command className='size-3' /><span>+K</span></kbd></span>
         </Button>
       </header>
   
@@ -134,7 +152,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
         :
         (
           <div>
-            <Masonry 
+            <Masonry
               breakpointCols={breakPointColumnsObj}
               className="flex w-auto -ml-4"
               columnClassName="pl-4 bg-clip-padding"
