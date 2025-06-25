@@ -27,6 +27,7 @@ type Task = {
   taskId: number | null | undefined;
   taskTitle: string;
   taskStatus: boolean;
+  taskOrder: number | null;
 }
 
 type TaskList = {
@@ -63,7 +64,7 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
         });
         const data = await response.json();
         if(data.success) {
-          // console.log(data.data);
+          console.log(data.data);
           setData(data.data);
         } else {
           toast.error("Failed to fetch list. Please try again later");
@@ -100,17 +101,28 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
         taskId: null,
         taskTitle: "",
         taskStatus: false,
+        taskOrder: 0,
       };
-
+      
       const updatedTasks = [...prev.tasks];
-      updatedTasks.splice(index+1,0, newTask);
+
+      updatedTasks.splice(index+1, 0, newTask);
+
+      const reOrderedTasks = updatedTasks.map((task, i) => ({
+        ...task,
+        taskOrder: i
+      }));
 
       return {
         ...prev,
-        tasks: updatedTasks
+        tasks: reOrderedTasks
       }
     })
   }
+
+  useEffect(() => {
+    console.log(data);
+  }, [data]);
 
   const handleDelete = async (index: number, taskId: number | null | undefined) => {
     if(taskId === null) {

@@ -180,6 +180,7 @@ interface Task {
   taskId: number;
   taskTitle: string;
   taskStatus: boolean | null;
+  taskOrder: number | null;
 }
 
 interface TaskList {
@@ -243,7 +244,7 @@ tasksRouter.get("task_list/:id", requireAuth, async (c) => {
       const result = await db
         .select()
         .from(tasksList)
-        .leftJoin(tasks, eq(tasks.taskListId, taskListId))
+        .innerJoin(tasks, eq(tasks.taskListId, taskListId))
         .where(eq(tasksList.id, taskListId))
         .orderBy(tasks.order);
       // console.log("result from get query =", result);
@@ -276,6 +277,7 @@ tasksRouter.get("task_list/:id", requireAuth, async (c) => {
             taskId: row.tasks.id,
             taskTitle: row.tasks.title,
             taskStatus: row.tasks.status,
+            taskOrder: row.tasks.order,
           });
         }
       });
@@ -691,6 +693,7 @@ tasksRouter.put("/update/:listId", requireAuth, async (c) => {
     const { userId } = c.get("authData");
 
     const { listTitle, newTasks } = await c.req.json();
+    console.log("Tasks received =", newTasks);
 
     if(!listTitle || typeof listTitle !== "string" || listTitle.trim() === "") {
         return c.json({ success: false, message: "List title is required!" }, 400);
@@ -704,10 +707,11 @@ tasksRouter.put("/update/:listId", requireAuth, async (c) => {
     if(!existingList || existingList[0].userId !== userId) {
         return c.json({ success: false, message: "Unauthorized or list not found!" }, 403);
     }
-    console.log("Existing List =", existingList);
+    // console.log("Existing List =", existingList);
 
-    const updateResponse = await db.update(tasksList).set({ title: listTitle }).where(eq(tasksList.id, listId));
-    console.log("Updated Response =", updateResponse);
+    // updating taskList title
+    await db.update(tasksList).set({ title: listTitle }).where(eq(tasksList.id, listId));
+    
 
     const tasksToInsert = newTasks.filter((task) => !task.taskId);
     const tasksToUpdate = newTasks.filter((task) => task.taskId);
@@ -718,7 +722,7 @@ tasksRouter.put("/update/:listId", requireAuth, async (c) => {
             title: task.taskTitle.trim(),
             status: false,
             taskListId: listId,
-            order: index
+            order: index  // FIXME: Update the order to be how the task was added
         }));
 
         await db.insert(tasks).values(insertTasks);
