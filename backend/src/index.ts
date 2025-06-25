@@ -145,10 +145,11 @@ const parseGeminiResponse = (response: any): TaskResponse | null => {
  */
 app.post("/api/ai", requireAuth, async (c) => {
   try {
-    const { prompt } = await c.req.json();
+    let { prompt } = await c.req.json();
     if(typeof prompt !== "string" || prompt.trim() === "") {
       return c.json({ success: false, message: "Prompt cannot be empty!" }, 400);
     }
+    prompt = prompt + " If there is no reason for tasks, Generate a example taskTitle closest related to the tasks generated";
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: prompt,
