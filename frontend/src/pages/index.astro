@@ -48,7 +48,8 @@ const steps = [
   <div>
     <!-- Heading Section -->
     <header
-      class="flex flex-col justify-center items-center pt-40 pb-30 bg-violet-50"
+      class="flex flex-col justify-center items-center py-40 bg-violet-50 px-10"
+      id="header"
     >
       <h1 class="text-5xl font-bold my-3">
         <span class="text-violet-700">TaskAI</span> - Your Intelligent Task Manager
@@ -79,11 +80,11 @@ const steps = [
 
     <!-- Features Section -->
     <section
-      class="flex justify-center pt-4 pb-20 bg-violet-50 gap-6 max-w-8xl"
+      class="flex justify-center pt-4 pb-20 bg-violet-50 gap-6 max-w-8xl scrolling-section px-10"
     >
       {
         features.map((f) => (
-          <div class="bg-white shadow-md p-3 rounded-lg max-w-2xs hover:-translate-y-2 transition">
+          <div class="bg-white shadow-md p-3 rounded-lg max-w-2xs hover:-translate-y-2 transition card">
             <img
               src={f.icon}
               alt="image"
@@ -97,13 +98,13 @@ const steps = [
     </section>
 
     <!-- How it works section -->
-    <section class="bg-violet-50 pb-20 pt-10">
+    <section class="bg-violet-50 pb-20 pt-10 scrolling-section px-10">
       <h2 class="text-2xl text-center font-bold mb-8">How It Works</h2>
       <div class="flex justify-center gap-5">
         {
           steps.map((s) => (
-            <div class="flex flex-col items-center justify-center max-w-2xs">
-              <span class="bg-violet-800 text-white p-3 rounded-full">
+            <div class="flex flex-col items-center justify-center max-w-2xs card">
+              <span class="bg-violet-800 text-white rounded-full flex items-center justify-center size-12">
                 {s.index}
               </span>
               <h3 class="text-lg font-bold">{s.title}</h3>
@@ -126,10 +127,33 @@ const steps = [
           Start using TaskAI today and experience the power of AI-assisted task
           management.
         </p>
-        <a class="bg-white text-violet-700 p-4 rounded-sm cursor-pointer"
-          >Try TaskAI Now!</a
-        >
+        <button class="bg-white text-violet-700 p-4 rounded-sm cursor-pointer" id="scroll-header-button">
+          Try TaskAI Now!
+        </button>
       </div>
     </section>
   </div>
 </BaseLayout>
+
+<script>
+  import { inView, animate, stagger } from "motion";
+  inView(
+    ".scrolling-section",
+    (element) => {
+      animate(element, { opacity: [0,1], y: [50, 0] }, { ease: [0.39, 0.24, 0.3, 1], duration: 1 });
+      
+      const cards = element.querySelectorAll(".card");
+      if(cards.length > 0) {
+        animate(cards, { opacity: [0, 1], y: [25, 0] }, { type: "spring", delay: stagger(0.25, { startDelay: 0.25 }) });
+      }
+    },
+    { amount: 0.25 }
+  )
+
+  const targetHeader = document.getElementById("header");
+  const scrollButton = document.getElementById("scroll-header-button");
+  
+  scrollButton?.addEventListener("click", () => {
+    targetHeader?.scrollIntoView({ behavior: "smooth" });
+  })
+</script>
