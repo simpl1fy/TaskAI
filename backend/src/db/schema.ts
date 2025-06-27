@@ -1,4 +1,4 @@
-import { timestamp, pgTable, boolean, varchar, integer } from "drizzle-orm/pg-core";
+import { timestamp, pgTable, boolean, varchar, integer, unique } from "drizzle-orm/pg-core";
 
 // export const statusEnum = pgEnum("status", ["pending", "completed"]);
 
@@ -9,11 +9,19 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at"),
 });
 
+export const categories = pgTable("categories", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: varchar("user_id").references(() => users.id, {onDelete: "cascade"}).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+}, (table) => [
+  unique().on(table.userId, table.name)
+])
+
 export const tasksList = pgTable("tasks_lists", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userId: varchar("user_id").references(() => users.id, {onDelete: 'cascade'}).notNull(),
   title: varchar("title", { length: 255 }).notNull(),
-  category: varchar("category", { length: 255}).notNull().default("Default"),
+  category: varchar("category", { length: 255}).notNull().default("default"),
   createdAt: timestamp("created_at").defaultNow()
 });
 

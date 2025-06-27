@@ -100,7 +100,7 @@ type GroupedTaskList = {
  *                 message:
  *                   type: string
  *       500:
- *         description: Malformed input(Missing user id)
+ *         description: Malformed input(Missing user id/Server Error)
  *         content:
  *           application/json:
  *             schema:

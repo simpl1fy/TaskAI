@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 import testRouter from "./routes/testRoutes";
 import userRouter from './routes/userRoutes';
 import tasksRouter from './routes/taskRoutes';
+import categoryRouter from './routes/categoryRoutes';
 import 'dotenv/config';
 import { GoogleGenAI, Type } from '@google/genai';
 import { requireAuth } from './middleware/requireAuth';
@@ -51,6 +52,7 @@ app.get('/', (c) => {
 app.route("/test", testRouter); // test router
 app.route("/user", userRouter);
 app.route("/task", tasksRouter);
+app.route("/category", categoryRouter);
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GEMINI_API_KEY });
 
