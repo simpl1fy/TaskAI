@@ -30,6 +30,7 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
   const { getToken } = useAuth();
   const [title, setTitle] = useState("");
   const [taskList, setTaskList] = useState([""]);
+  const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -76,7 +77,7 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
           'Content-type': "application/json",
           'Authorization': `Bearer ${fetchedToken}`
         },
-        body: JSON.stringify({ title: title, tasksArray: taskList })
+        body: JSON.stringify({ title: title, tasksArray: taskList, category: category })
       })
       const data = await res.json();
       if(!data.success) {
@@ -109,6 +110,10 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
           <div className="flex flex-col">
             <label htmlFor="title">Title</label>
             <Input type="text" placeholder="Title of this list" value={title} onChange={(e) => setTitle(e.target.value)} className="selection:bg-blue-500 selection:text-white" />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="category">Category</label>
+            <Input type="text" placeholder="Title of this list" value={category} onChange={(e) => setCategory(e.target.value)} className="selection:bg-blue-500 selection:text-white" />
           </div>
           <h3 className="text-lg">Add Tasks</h3>
           {taskList.map((task, index) => (

@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { db } from "../db/db";
-import { tasksList, tasks, users } from "../db/schema";
+import { tasksList, tasks, users, categories } from "../db/schema";
 import { requireAuth } from "../middleware/requireAuth";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 const tasksRouter = new Hono();
 
@@ -558,7 +558,7 @@ tasksRouter.delete('/delete_task/:id', requireAuth, async (c) => {
 tasksRouter.post('/add_list', requireAuth, async (c) => {
     try {
         const { userId } = c.get('authData');
-        const { title, tasksArray } = await c.req.json();
+        const { title, tasksArray, category } = await c.req.json();
 
         if(!title || typeof title !== "string") {
             return c.json({ success: false, message: "Title is required!" });
@@ -568,8 +568,16 @@ tasksRouter.post('/add_list', requireAuth, async (c) => {
           return c.json({ success: false, message: "Tasks are required!" });
         }
 
+        const categoryRes = await db.select({
+          id: categories.id
+        }).from(categories).where(and(
+          eq(categories.userId, userId),
+          eq(categories.name, category)
+        ));
 
-        const insertedList = await db.insert(tasksList).values({ userId, title }).returning({ insertedId: tasksList.id});
+        const categoryId = Number(categoryRes[0].id);
+
+        const insertedList = await db.insert(tasksList).values({ userId, title, categoryId }).returning({ insertedId: tasksList.id});
         // console.log(insertedList);
         const listId = insertedList[0]?.insertedId;
         
