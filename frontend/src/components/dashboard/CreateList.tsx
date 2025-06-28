@@ -99,9 +99,11 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
       }
     }
     
-    fetchCategories();
+    if(open) {
+      fetchCategories();
+    }
     
-  }, [])
+  }, [open])
   
 
   const handleTaskChange = (index: number, value: string) => {
@@ -192,8 +194,8 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
   return (
     <div>
       <Dialog open={open} onOpenChange={setOpen}>
-        {!dialogLoading &&
-          <DialogContent className="max-h-128 overflow-y-auto">
+        {!dialogLoading ?
+          (<DialogContent className="max-h-128 overflow-y-auto">
 
             {/* Header Component */}
             <DialogHeader>
@@ -279,21 +281,33 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
               </Button>
             </DialogFooter>
           </DialogContent>
-        }
-        {dialogLoading &&
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create your task list</DialogTitle>
-              <DialogDescription>Create or edit your list of tasks</DialogDescription>
-            </DialogHeader>
-            <Skeleton className="h-4 w-full rounded-lg" />
-            <div className="flex flex-col space-y-2">
-              <Skeleton className="h-4 w-full rounded-md" />
-              <Skeleton className="h-4 w-full rounded-md" />
-              <Skeleton className="h-4 w-full rounded-md" />
-              <Skeleton className="h-4 w-full rounded-md" />
-            </div>
-          </DialogContent>
+          )
+          :
+          (
+            <DialogContent>
+              {/* Header Component */}
+              <DialogHeader>
+                <DialogTitle>Create your task list</DialogTitle>
+                <DialogDescription>Create or edit your list of tasks</DialogDescription>
+              </DialogHeader>
+
+              {/* Skeleton */}
+              <Skeleton className="h-4 w-full rounded-lg" />
+              <div className="flex flex-col space-y-2">
+                <Skeleton className="h-4 w-full rounded-md" />
+                <Skeleton className="h-4 w-full rounded-md" />
+                <Skeleton className="h-4 w-full rounded-md" />
+                <Skeleton className="h-4 w-full rounded-md" />
+              </div>
+
+              {/* Footer */}
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="destructive" className="cursor-pointer" onClick={() => {setTaskList([""]); setTitle("")}}>Close</Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          )
         }
       </Dialog>
     </div>
