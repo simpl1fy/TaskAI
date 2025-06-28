@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { db } from "../db/db";
-import { users } from "../db/schema";
+import { users, categories } from "../db/schema";
 import { createClerkClient } from "@clerk/backend";
 import { eq } from "drizzle-orm";
 
@@ -71,7 +71,7 @@ userRouter.post('/sync', async(c) => {
         // console.log(userData);
         if(userData.length === 0) {
             await db.insert(users).values({ id: userId, email: user.emailAddresses[0].emailAddress, name: user.firstName+" "+user.lastName, createdAt: new Date(user.createdAt) })
-
+            await db.insert(categories).values({ userId: userId, name: "default"});
             return c.json({ success: true, message: "Data added to db" }, 200);
         }
 
