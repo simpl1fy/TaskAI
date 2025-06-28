@@ -8,6 +8,7 @@ import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
 import Masonry from "react-masonry-css";
 import { Command } from 'lucide-react';
+import { capitalizeFirst } from '@/helpers/capitalizeFirst';
 
 type TaskItem = {
   taskId: number;
@@ -27,11 +28,18 @@ type PropTypes = {
   setListUpdated: Dispatch<SetStateAction<boolean>>
 }
 
+type CategoryType = {
+  id: number;
+  name: string;
+}
+
 const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
 
   const [data, setData] = useState<GroupedTaskList[]>([]);
   const [createModal, setCreateModal] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
+  const [categories, setCategories] = useState<CategoryType[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType>();
 
   const { getToken } = useAuth();
   
@@ -63,7 +71,38 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
       }
     }
     fetchTaskList();
-  }, [listUpdated])
+  }, [listUpdated]);
+
+  useEffect(() => {
+      const fetchCategories = async () => {
+        try {
+          const token = await getToken();
+          const baseURL = import.meta.env.PUBLIC_BACKEND_URL;
+          const res = await fetch(`${baseURL}/category/get_all`, {
+            method: "GET",
+            headers: {
+              "Content-type": "application/json",
+              "Authorization": `Bearer ${token}`
+            }
+          });
+          const data = await res.json();
+          console.log("Categories received =", data);
+          if(data.success) {
+            setCategories(data.data);
+            const selected = categories?.find(cat => cat.name === "default");
+            setSelectedCategory(selected);
+          } else {
+            toast.error(data.message);
+          }
+        } catch (err) {
+          console.error("An error occured while fetching categories", err);
+          toast.error("Could not fetch categories. Please try again later!");
+        }
+      }
+      
+      fetchCategories();
+      
+    }, [])
 
   const handleChange = async (listIndex:number, taskIndex:number, taskId: number) => {
     const newData = [...data];
@@ -114,7 +153,15 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
 
     }
   }, []);
-  
+
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = Number(e.target.value);
+    console.log(selectedId);
+    const selected = categories?.find(cat => cat.id === selectedId);
+    if(selected) {
+      setSelectedCategory(selected);
+    }
+  }
 
   const breakPointColumnsObj = {
     default: 4,
@@ -127,12 +174,23 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
     <div className="shadow-lg p-4 sm:p-6 rounded-lg bg-white w-full shadow-md">
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <h3 className="text-xl sm:text-2xl font-bold">Your Tasks</h3>
-        <Button
-          className="cursor-pointer bg-gray-200 hover:bg-gray-300 text-black w-full sm:w-auto"
-          onClick={() => setCreateModal(true)}
-        >
-          <span className="flex items-center gap-4">Create your own List<kbd className='text-sm flex items-center'><Command className='size-3' /><span>+K</span></kbd></span>
-        </Button>
+        <div>
+          <select
+            className="border border-1 p-2 rounded-md mr-3"
+            value={selectedCategory?.id}
+            onChange={handleSelectChange}
+          >
+            {categories && categories.map((value,_) => (
+              <option key={value.id} value={value.id}>{capitalizeFirst(value.name)}</option>
+            ))}
+          </select>
+          <Button
+            className="cursor-pointer bg-gray-200 hover:bg-gray-300 text-black w-full sm:w-auto"
+            onClick={() => setCreateModal(true)}
+          >
+            <span className="flex items-center gap-4">Create your own List<kbd className='text-sm flex items-center'><Command className='size-3' /><span>+K</span></kbd></span>
+          </Button>
+        </div>
       </header>
   
       {dataLoading ?

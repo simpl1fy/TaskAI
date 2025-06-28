@@ -16,6 +16,7 @@ import { Trash } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import { toast } from "sonner";
 import { LoaderCircle } from "lucide-react";
+import { capitalizeFirst } from "@/helpers/capitalizeFirst";
 
 type PropTypes = {
   isUpdated: Dispatch<SetStateAction<boolean>>;
@@ -186,11 +187,6 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
     }
   }
 
-  const getName = (value: string) => {
-    const v = value.charAt(0).toUpperCase() + value.slice(1);
-    return v;
-  }
-
   return (
     <div>
       <Dialog open={open} onOpenChange={setOpen}>
@@ -223,7 +219,7 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
                 <option value={-1} className="text-sm">Category</option>
                 {categories && categories.map((value,_) => (
                   <option key={value.id} value={value.id} className="text-sm">
-                    {getName(value.name)}
+                    {capitalizeFirst(value.name)}
                   </option>
                 ))}
               </select>
