@@ -34,11 +34,13 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
 
   const { getToken } = useAuth();
   const [title, setTitle] = useState("");
-  const [taskList, setTaskList] = useState([""]);
+  const [taskList, setTaskList] = useState<string[]>([""]);
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>({ id: -1, name: "Category" });
   const [categories, setCategories] = useState<CategoryType[]>();
   const [loading, setLoading] = useState(false);
   const [dialogLoading, setDialogLoading] = useState(false);
+  const [titleError, setTitleError] = useState(false);
+  const [categoryError, setCategoryError] = useState(false);
 
   useEffect(() => {
     if(listTitle && listTitle.trim() !== "") {
@@ -48,6 +50,25 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
       setTaskList(taskArray);
     }
   }, [listTitle, taskArray]);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    if(titleError) {
+      timer = setTimeout(() => {
+        setTitleError(false);
+      }, 2000);
+    }
+    if(categoryError) {
+      timer = setTimeout(() => {
+        setCategoryError(false);
+      }, 2000);
+    }
+  
+    return () => {
+      clearTimeout(timer);
+    }
+  }, [titleError, categoryError]);
+  
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -100,16 +121,30 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
 
   const handleSubmit = async () => {
 
-    setLoading(true);
     const fetchedToken = await getToken();
-
+    
     if(!fetchedToken) {
       alert("User not authenticated. Please login first");
       return;
     }
 
-    console.log(Array.isArray(taskList));
+    console.log("Task List =", taskList);
+    
+    if(title.trim() === "") {
+      setTitleError(true);
+      toast.error("Title cannot be empty!");
+      return;
+    } else if(selectedCategory.id === -1) {
+      setCategoryError(true);
+      toast.error("Please select category!");
+      return;
+    } else if(taskList.length === 1 && taskList[0].trim() === "") {
+      toast.error("Tasks cannot be empty. Atleast 1 task required!");
+      return;
+    }
+    
     const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
+    setLoading(true);
     try {
       const res = await fetch(`${baseUrl}/task/add_list`, {
         method: "POST",
@@ -169,17 +204,17 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
             {/* Body */}
             <div className="flex flex-col">
               <label htmlFor="title">Title</label>
-              <Input type="text" placeholder="Title of this list" value={title} onChange={(e) => setTitle(e.target.value)} className="selection:bg-blue-500 selection:text-white" />
+              <Input type="text" placeholder="Title of this list" value={title} onChange={(e) => setTitle(e.target.value)} className={`selection:bg-blue-500 selection:text-white ${titleError ? "border-1 border-red-500":""}`} />
             </div>
             {/* <div className="flex flex-col">
               <label htmlFor="category">Category</label>
               <Input type="text" placeholder="Title of this list" value={category} onChange={(e) => setCategory(e.target.value)} className="selection:bg-blue-500 selection:text-white" />
             </div> */}
-            <section className="flex justify-between">
+            <section className="flex justify-between items-center">
               <label htmlFor="category">Choose category</label>
               <select 
                 name="category" 
-                className="border border-1 p-2 rounded-md text-sm"
+                className={`border border-1 p-2 rounded-md text-sm ${selectedCategory.name==="Category"?"text-gray-700" : ""} ${categoryError?"border-red-500":""}`}
                 value={selectedCategory.id}
                 onChange={handleSelectChange}
               >

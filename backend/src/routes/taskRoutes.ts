@@ -460,25 +460,6 @@ tasksRouter.delete('/delete_task/:id', requireAuth, async (c) => {
         return c.json({ success: false, message: "Invalid Input" });
       }
 
-      // Check if task exists and belongs to the user
-      // const taskWithList = await db.query.tasks.findFirst({
-      //   where: (tasks, { eq }) => eq(tasks.id, id),
-      //   with: {
-      //     taskList: {
-      //       columns: { userId: true },
-      //     },
-      //   },
-      // });
-
-      // console.log(taskWithList)
-
-      // if (!taskWithList || taskWithList.taskList.userId !== userId) {
-      //   return c.json(
-      //     { success: false, message: "Task not found or access denied" },
-      //     404
-      //   );
-      // }
-
       const res = await db.delete(tasks).where(eq(tasks.id, id)).returning();
       if (res.length == 0) {
         return c.json(
@@ -514,6 +495,7 @@ tasksRouter.delete('/delete_task/:id', requireAuth, async (c) => {
  *             required:
  *               - title
  *               - tasksArray
+ *               - category
  *             properties:
  *               title:
  *                 type: string
@@ -523,6 +505,15 @@ tasksRouter.delete('/delete_task/:id', requireAuth, async (c) => {
  *                 items:
  *                   type: string
  *                 example: ["Buy groceries", "Walk the dog"]
+ *               category:
+ *                 type: object
+ *                 properties:
+ *                   id: 
+ *                     type: number
+ *                     example: 1
+ *                   name:
+ *                     type: string
+ *                     example: "default"
  *     responses:
  *       200:
  *         description: Task list and tasks added successfully
@@ -568,16 +559,11 @@ tasksRouter.post('/add_list', requireAuth, async (c) => {
           return c.json({ success: false, message: "Tasks are required!" });
         }
 
-        const categoryRes = await db.select({
-          id: categories.id
-        }).from(categories).where(and(
-          eq(categories.userId, userId),
-          eq(categories.name, category)
-        ));
+        if(category.id === -1 || Number.isNaN(category.id) ||  category.id === undefined) {
+          return c.json({ success: false, message: "Please select a category" });
+        }
 
-        const categoryId = Number(categoryRes[0].id);
-
-        const insertedList = await db.insert(tasksList).values({ userId, title, categoryId }).returning({ insertedId: tasksList.id});
+        const insertedList = await db.insert(tasksList).values({ userId, title, categoryId: category.id }).returning({ insertedId: tasksList.id});
         // console.log(insertedList);
         const listId = insertedList[0]?.insertedId;
         
