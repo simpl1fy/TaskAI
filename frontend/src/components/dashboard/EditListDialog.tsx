@@ -270,7 +270,7 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
         }
         <DialogFooter>
           <DialogClose asChild>
-            <Button className="bg-red-600 text-white hover:bg-red-700 cursor-pointer" onClick={() => isUpdated(prev => !prev)}>Cancel</Button>
+            <Button className="bg-red-600 text-white hover:bg-red-700 cursor-pointer">Cancel</Button>
           </DialogClose>
           {data?.listId && 
             <Button className="bg-green-600 hover:bg-green-700 transition cursor-pointer" onClick={() => handleSave(data.listId)} disabled={saveLoading}>
