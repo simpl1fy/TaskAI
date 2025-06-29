@@ -39,7 +39,10 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
   const [createModal, setCreateModal] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
   const [categories, setCategories] = useState<CategoryType[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryType>();
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType>({
+    id: -1,
+    name: "All"
+  });
 
   const { getToken } = useAuth();
   
@@ -49,7 +52,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
         setDataLoading(true);
         const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
         const fetchedToken = await getToken();
-        const response = await fetch(`${baseUrl}/task/all_lists`, {
+        const response = await fetch(`${baseUrl}/task/all_lists/${selectedCategory.id}`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${fetchedToken}`,
@@ -71,7 +74,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
       }
     }
     fetchTaskList();
-  }, [listUpdated]);
+  }, [listUpdated, selectedCategory]);
 
   useEffect(() => {
       const fetchCategories = async () => {
@@ -89,8 +92,6 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
           console.log("Categories received =", data);
           if(data.success) {
             setCategories(data.data);
-            const selected = categories?.find(cat => cat.name === "default");
-            setSelectedCategory(selected);
           } else {
             toast.error(data.message);
           }
@@ -160,6 +161,8 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
     const selected = categories?.find(cat => cat.id === selectedId);
     if(selected) {
       setSelectedCategory(selected);
+    } else {
+      setSelectedCategory({ id: -1, name: "All" });
     }
   }
 
@@ -180,6 +183,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
             value={selectedCategory?.id}
             onChange={handleSelectChange}
           >
+            <option value={-1}>All tasks</option>
             {categories && categories.map((value,_) => (
               <option key={value.id} value={value.id}>{capitalizeFirst(value.name)}</option>
             ))}

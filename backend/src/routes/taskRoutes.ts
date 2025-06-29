@@ -111,15 +111,48 @@ type GroupedTaskList = {
  *                 message:
  *                   type: string
  */
-tasksRouter.get('/all_lists', requireAuth, async (c) => {
+tasksRouter.get('/all_lists/:categoryId', requireAuth, async (c) => {
     try {
         const { userId } = c.get('authData');
+        const categoryId = Number(c.req.param("categoryId"));
+
+        console.log(categoryId);
 
         if(!userId) {
           return c.json({ success: false, message: "User ID not found!" }, 400);
         }
-        
-        const allTasks = await db.select().from(tasksList).leftJoin(tasks, eq(tasksList.id, tasks.taskListId)).where(eq(tasksList.userId, userId)).orderBy(desc(tasksList.createdAt), tasks.order);
+
+        if(categoryId !== -1) {
+          const allTasks = await db.select().from(tasksList).innerJoin(tasks, eq(tasksList.id, tasks.taskListId)).where(and(eq(tasksList.userId, userId), eq(tasksList.categoryId, categoryId))).orderBy(desc(tasksList.createdAt), tasks.order);
+          const grouped = allTasks.reduce<GroupedTaskList[]>((acc, row) => {
+          const listId = row.tasks_lists.id;
+
+          let existing = acc.find((item) => item.listId === listId);
+          const task = row.tasks?.id
+            ? {
+                taskId: row.tasks.id,
+                taskTitle: row.tasks.title,
+                taskStatus: row.tasks.status,
+              }
+            : null;
+
+          if (existing) {
+            if (task) existing.tasks.push(task);
+          } else {
+            acc.push({
+              listId: row.tasks_lists.id,
+              listTitle: row.tasks_lists.title,
+              createdAt: row.tasks_lists.createdAt,
+              tasks: task ? [task] : [],
+            });
+          }
+
+          return acc;
+        }, []);
+        return c.json({ success: true, allTasks: grouped }, 200);
+        }
+
+        const allTasks = await db.select().from(tasksList).innerJoin(tasks, eq(tasksList.id, tasks.taskListId)).where(eq(tasksList.userId, userId)).orderBy(desc(tasksList.createdAt), tasks.order);
         // console.log(allTasks);
         const grouped = allTasks.reduce<GroupedTaskList[]>((acc, row) => {
           const listId = row.tasks_lists.id;
