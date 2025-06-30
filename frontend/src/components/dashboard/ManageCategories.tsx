@@ -8,15 +8,17 @@ import {
   DialogHeader,
 } from "@/components/ui/dialog";
 import { Input } from "../ui/input";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import { toast } from "sonner";
 import { Skeleton } from "../ui/skeleton";
 import { capitalizeFirst } from "@/helpers/capitalizeFirst";
+import { Button } from "../ui/button";
 
 type PropTypes = {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
+  setCategoriesUpdated: Dispatch<SetStateAction<boolean>>;
 };
 
 type CategoryType = {
@@ -24,10 +26,12 @@ type CategoryType = {
   name: string;
 };
 
-const ManageCategories = ({ open, setOpen }: PropTypes) => {
+const ManageCategories = ({ open, setOpen, setCategoriesUpdated }: PropTypes) => {
   const { getToken } = useAuth();
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [loading, setLoading] = useState(false);
+  const [addButtonLoading, setAddButtonLoading] = useState(false);
+  const [categoryName, setCategoryName] = useState("");
   const [createCategoryClicked, setCreateCategoryClicked] = useState(false);
 
   const handleDialogClose = () => {
@@ -82,6 +86,40 @@ const ManageCategories = ({ open, setOpen }: PropTypes) => {
     setCreateCategoryClicked(true);
   }
 
+  const handleAddCategory = async () => {
+    if(addButtonLoading) {
+      return;
+    }
+    try {
+      setAddButtonLoading(true);
+      const token = await getToken();
+      const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
+      const res = await fetch(`${baseUrl}/category/create`, {
+        method: "POST",
+        body: JSON.stringify({ "categoryName": categoryName }),
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      const resData = await res.json();
+      if(resData.success) {
+        const newCategory = { id: resData.insertedCategoryId, name: categoryName };
+        setCategories(prev => [...prev, newCategory]);
+        setAddButtonLoading(false);
+        setCategoriesUpdated(prev => !prev);
+      } else {
+        toast.error("Failed to add category. Please try again later!");
+      }
+      setAddButtonLoading(false);
+      setCreateCategoryClicked(false);
+    } catch (err) {
+      console.error("An error occured while adding category =", err);
+      toast.error("Failed to add category. Please try again later!");
+      setAddButtonLoading(false);
+      setCreateCategoryClicked(false);
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent>
@@ -112,8 +150,14 @@ const ManageCategories = ({ open, setOpen }: PropTypes) => {
                 {createCategoryClicked ?
                   (
                     <span className="rounded-full flex items-center relative">
-                      <Input placeholder="Enter category name" />
-                      <div className="absolute right-2 p-1 bg-violet-700 rounded-full"><Plus className="size-4 text-white" /></div>
+                      <Input placeholder="Enter category name" value={categoryName} onChange={(e) => setCategoryName(e.target.value)} />
+                      <div className="absolute right-2 p-1 bg-violet-700 rounded-full cursor-pointer" onClick={handleAddCategory}>
+                        {addButtonLoading ?
+                          (<Loader2 className=" size-4 text-white animate-spin" />)
+                          :
+                          (<Plus className="size-4 text-white" />)
+                        }
+                      </div>
                     </span>
                   )
                   :
