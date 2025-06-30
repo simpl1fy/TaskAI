@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { toast } from 'sonner';
 import CreateList from './CreateList';
+import ManageCategories from './ManageCategories';
 import { useAuth } from '@clerk/clerk-react';
 import DropDown from './DropDown';
 import { Button } from '../ui/button';
@@ -37,6 +38,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
 
   const [data, setData] = useState<GroupedTaskList[]>([]);
   const [createModal, setCreateModal] = useState(false);
+  const [manageCategoriesModal, setManageCategoriesModal] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>({
@@ -158,6 +160,10 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = Number(e.target.value);
     console.log(selectedId);
+    if(selectedId === -2) {
+      setManageCategoriesModal(true);
+      return;
+    }
     const selected = categories?.find(cat => cat.id === selectedId);
     if(selected) {
       setSelectedCategory(selected);
@@ -187,6 +193,8 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
             {categories && categories.map((value,_) => (
               <option key={value.id} value={value.id}>{capitalizeFirst(value.name)}</option>
             ))}
+            <hr/>
+            <option value={-2}>Manage Categories</option>
           </select>
           <Button
             className="cursor-pointer bg-gray-200 hover:bg-gray-300 text-black w-full sm:w-auto"
@@ -261,6 +269,10 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
         isUpdated={setListUpdated}
         open={createModal}
         setOpen={setCreateModal}
+      />
+      <ManageCategories
+        open={manageCategoriesModal}
+        setOpen={setManageCategoriesModal}
       />
     </div>
   )  
