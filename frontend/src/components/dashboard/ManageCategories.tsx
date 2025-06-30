@@ -16,6 +16,18 @@ type PropTypes = {
 }
 
 const ManageCategories = ({ open, setOpen }: PropTypes) => {
+
+    useEffect(() => {
+      const fetchCategories = async () => {
+        try {
+            
+        } catch (err) {
+            console.error("An error occured while fetching categories =", err);
+        }
+      }
+    }, [])
+    
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
@@ -26,6 +38,10 @@ const ManageCategories = ({ open, setOpen }: PropTypes) => {
                 <DialogHeader>Manage Categories</DialogHeader>
                 <DialogDescription>Create, Delete, Edit Categories</DialogDescription>
             </DialogHeader>
+
+            <section>
+
+            </section>
         </DialogContent>
     </Dialog>
   )
