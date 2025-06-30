@@ -6,8 +6,8 @@ import {
   DialogDescription,
   DialogTitle,
   DialogHeader,
-  DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "../ui/input";
 import { Plus } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import { toast } from "sonner";
@@ -28,6 +28,12 @@ const ManageCategories = ({ open, setOpen }: PropTypes) => {
   const { getToken } = useAuth();
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [loading, setLoading] = useState(false);
+  const [createCategoryClicked, setCreateCategoryClicked] = useState(false);
+
+  const handleDialogClose = () => {
+    setCreateCategoryClicked(false);
+    setOpen(false);
+  }
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -58,11 +64,29 @@ const ManageCategories = ({ open, setOpen }: PropTypes) => {
     }
   }, [open]);
 
+  const handleKeyDownEvent = (e: KeyboardEvent) => {
+    if(createCategoryClicked && e.key === "Enter") {
+      setCreateCategoryClicked(false);
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDownEvent);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDownEvent);
+    }
+  }, [])
+
+  const handleCreateCategory = () => {
+    setCreateCategoryClicked(true);
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent>
         <DialogHeader className="mb-2">
-          <DialogHeader>Manage Categories</DialogHeader>
+          <DialogTitle>Manage Categories</DialogTitle>
           <DialogDescription>Create, Delete, Edit Categories</DialogDescription>
         </DialogHeader>
 
@@ -85,7 +109,18 @@ const ManageCategories = ({ open, setOpen }: PropTypes) => {
                 {categories && categories.map((c,_) => (
                   <span key={c.id} className="px-3 py-1 rounded-full bg-gray-200 cursor-pointer">{capitalizeFirst(c.name)}</span>
                 ))}
-                <span className="px-3 py-1 rounded-full bg-neutral-700 text-white cursor-pointer flex items-center"><Plus className="size-4" />Create Category</span>
+                {createCategoryClicked ?
+                  (
+                    <span className="rounded-full flex items-center relative">
+                      <Input placeholder="Enter category name" />
+                      <div className="absolute right-2 p-1 bg-violet-700 rounded-full"><Plus className="size-4 text-white" /></div>
+                    </span>
+                  )
+                  :
+                  (
+                    <span className="px-3 py-1 rounded-full bg-neutral-700 text-white cursor-pointer flex items-center" onClick={handleCreateCategory}><Plus className="size-4" />Create Category</span>
+                  )
+                }
               </div>
             )
           }
