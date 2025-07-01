@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { Dispatch, SetStateAction } from "react";
+import type { Dispatch, SetStateAction, KeyboardEvent } from "react";
 import {
   Dialog,
   DialogContent,
@@ -32,11 +32,7 @@ type CategoryType = {
   name: string;
 };
 
-const ManageCategories = ({
-  open,
-  setOpen,
-  setCategoriesUpdated,
-}: PropTypes) => {
+const ManageCategories = ({ open, setOpen, setCategoriesUpdated, }: PropTypes) => {
   const { getToken } = useAuth();
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,6 +46,9 @@ const ManageCategories = ({
   const handleDialogClose = () => {
     setCreateCategoryClicked(false);
     setCategoryName("");
+    setEditingId(-1);
+    setEditCategoryValue("");
+    setEditCategoryLoading(false);
     setOpen(false);
   };
 
@@ -82,8 +81,9 @@ const ManageCategories = ({
     }
   }, [open]);
 
-  const handleEditClick = (categoryId: number) => {
+  const handleEditClick = (categoryId: number, categoryName: string) => {
     setEditingId(categoryId);
+    setEditCategoryValue(categoryName);
   };
 
   const categoryEditBlur = () => {
@@ -94,8 +94,8 @@ const ManageCategories = ({
     setCreateCategoryClicked(true);
   };
 
-  const handleKeyDown = (e:KeyboardEvent) => {
-    if(e.key === "Enter") {
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if(event.key === "Enter") {
       handleCategoryEdit(editingId);
     }
   }
@@ -142,6 +142,9 @@ const ManageCategories = ({
   const handleCategoryEdit = async (categoryId: number) => {
     if(editCategoryLoading) {
       return;
+    } else if(editCategoryValue.trim() === "") {
+      toast.error("Category name cannot be empty!");
+      return;
     }
 
     setEditCategoryLoading(true);
@@ -165,12 +168,14 @@ const ManageCategories = ({
             : category
           )
         )
+        setCategoriesUpdated(prev => !prev);
         setEditingId(-1);
         setEditCategoryValue("");
         setEditCategoryLoading(false);
         toast.success(resData.message);
       } else {
         toast.error("An error occured while updating category. Please try again later!");
+        setEditCategoryLoading(false);
       }
     } catch (err) {
       console.error("An error occured while updating category name =", err);
@@ -212,7 +217,7 @@ const ManageCategories = ({
                           value={editCategoryValue}
                           onChange={(e) => setEditCategoryValue(e.target.value)}
                           onBlur={categoryEditBlur}
-                          onKeyDown={e => handleKeyDown}
+                          onKeyDown={handleKeyDown}
                         />
                         <button 
                           className="absolute bg-violet-700 hover:bg-violet-800 p-2 rounded-full right-2 cursor-pointer text-white"
@@ -244,7 +249,7 @@ const ManageCategories = ({
                               variant="ghost"
                               size="sm"
                               className="w-full cursor-pointer"
-                              onClick={() => handleEditClick(c.id)}
+                              onClick={() => handleEditClick(c.id, c.name)}
                             >
                               <Edit className="size-4 mr-1" />
                               Edit
