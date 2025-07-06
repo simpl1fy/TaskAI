@@ -186,6 +186,32 @@ const ManageCategories = ({ open, setOpen, setCategoriesUpdated, }: PropTypes) =
     }
   }
 
+  const handleCategoryDelete = async (categoryId: number) => {
+    try {
+      const token = await getToken();
+      const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
+      const res = await fetch(`${baseUrl}/category/delete`, {
+        method: "POST",
+        body: JSON.stringify({ categoryId: categoryId }),
+        headers: {
+          "Content-type": "Application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      const resData = await res.json();
+      if(resData.success) {
+        toast.success(resData.message || "Category deleted successfully!");
+        setCategories(prev => prev.filter(c => c.id !== categoryId));
+        setCategoriesUpdated(prev => !prev);
+      } else {
+        toast.error(resData.message);
+      }
+    } catch (err) {
+      console.error("An error occured while deleting category =", err);
+      toast.error("Failed to delete category!");
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent>
@@ -260,6 +286,7 @@ const ManageCategories = ({ open, setOpen, setCategoriesUpdated, }: PropTypes) =
                               variant="ghost"
                               size="sm"
                               className="w-full cursor-pointer"
+                              onClick={() => handleCategoryDelete(c.id)}
                             >
                               <Trash2 className="size-4 mr-1 text-red-600 hover:text-red-700" />
                               <span className="text-red-600 hover:text-red-700">

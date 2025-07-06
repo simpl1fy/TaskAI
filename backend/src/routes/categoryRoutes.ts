@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { db } from "../db/db";
-import { categories } from "../db/schema";
+import { categories, tasksList } from "../db/schema";
 import { requireAuth } from "../middleware/requireAuth";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 
 const categoryRouter = new Hono();
@@ -81,6 +81,45 @@ categoryRouter.patch("/update/:categoryId", requireAuth, async (c) => {
 
     } catch (err) {
         console.error("An error occured while updating category name =", err);
+        return c.json({ message: "Internal Server Error" }, 500);
+    }
+})
+
+categoryRouter.post("delete", requireAuth, async (c) => {
+    try {
+        const { userId } = c.get("authData");
+        if(!userId) {
+            return c.json({ success: false, message: "Please log in before continuing" }, 500);
+        }
+        const { categoryId } = await c.req.json();
+
+        // Getting the default category for setting the task lists (fall back if the category is not empty)
+        const defaultCategory = await db.select().from(categories).where(and(eq(categories.name, "default"), eq(categories.userId, userId)));
+        
+        console.log(defaultCategory);
+
+
+        // Replacing any tasks lists with the category_id
+        const updateTasksLists = await db.update(tasksList).set({ categoryId: defaultCategory[0].id }).where(eq(tasksList.categoryId, categoryId));
+
+        console.log(updateTasksLists);
+        if(!updateTasksLists) {
+            return c.json({ success: false, message: "Failed to delete category. Please try again later!" }, 500);
+
+        }
+
+        // deleting the category record from table - categories
+        const deleteCategory = await db.delete(categories).where(eq(categories.id, categoryId));
+
+        console.log(deleteCategory);
+
+        if(!deleteCategory) {
+            return c.json({ success: false, message: "Failed to delete category!" }, 500);
+        }
+
+        return c.json({ success: true, message: "Category Deleted Successfully!" }, 200);
+    } catch (err) {
+        console.error("An error occured while deleting category =", err);
         return c.json({ message: "Internal Server Error" }, 500);
     }
 })
