@@ -4,7 +4,7 @@ import { capitalizeFirst } from "@/helpers/capitalizeFirst";
 type PropTypes = {
   categories: Category[] | undefined;
   selectedCategory: Category;
-  categoryError: boolean;
+  categoryError?: boolean;
   handleSelectChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 };
 

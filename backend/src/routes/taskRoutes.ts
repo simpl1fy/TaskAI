@@ -216,10 +216,16 @@ interface Task {
   taskOrder: number | null;
 }
 
+interface Category {
+  id: number;
+  name: string;
+}
+
 interface TaskList {
   listId: number;
   listTitle: string;
   listCreatedAt: Date | null;
+  category: Category;
   tasks: Task[];
 }
 /**
@@ -278,6 +284,7 @@ tasksRouter.get("task_list/:id", requireAuth, async (c) => {
         .select()
         .from(tasksList)
         .innerJoin(tasks, eq(tasks.taskListId, taskListId))
+        .innerJoin(categories, eq(categories.id, tasksList.categoryId))
         .where(eq(tasksList.id, taskListId))
         .orderBy(tasks.order);
       // console.log("result from get query =", result);
@@ -294,6 +301,10 @@ tasksRouter.get("task_list/:id", requireAuth, async (c) => {
         listId: result[0].tasks_lists.id,
         listTitle: result[0].tasks_lists.title,
         listCreatedAt: result[0].tasks_lists.createdAt,
+        category: {
+          id: result[0].categories.id,
+          name: result[0].categories.name
+        },
         tasks: [],
       };
 
