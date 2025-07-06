@@ -163,6 +163,11 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
       } else {
         toast.success(data.message);
         isUpdated((prev) => !prev);
+
+        // If successful we set everything to default, for new list creation.
+        setTitle("");
+        setSelectedCategory({ id: -1, name: "Category" });
+        setTaskList([""]);
         setOpen(false);
       }
       setLoading(false);
