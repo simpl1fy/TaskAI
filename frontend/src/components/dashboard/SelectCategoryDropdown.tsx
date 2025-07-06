@@ -2,7 +2,7 @@ import type { Category } from "@/types/category";
 import { capitalizeFirst } from "@/helpers/capitalizeFirst";
 
 type PropTypes = {
-  categories: Category[];
+  categories: Category[] | undefined;
   selectedCategory: Category;
   categoryError: boolean;
   handleSelectChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;

@@ -17,6 +17,7 @@ import { useAuth } from "@clerk/clerk-react";
 import { toast } from "sonner";
 import { LoaderCircle } from "lucide-react";
 import { capitalizeFirst } from "@/helpers/capitalizeFirst";
+import SelectCategoryDropdown from "./SelectCategoryDropdown";
 
 type PropTypes = {
   isUpdated: Dispatch<SetStateAction<boolean>>;
@@ -213,22 +214,7 @@ const CreateList = ({ isUpdated, open, setOpen, listTitle, taskArray }: PropType
               <label htmlFor="category">Category</label>
               <Input type="text" placeholder="Title of this list" value={category} onChange={(e) => setCategory(e.target.value)} className="selection:bg-blue-500 selection:text-white" />
             </div> */}
-            <section className="flex justify-between items-center">
-              <label htmlFor="category">Choose category</label>
-              <select 
-                name="category" 
-                className={`border border-1 p-2 rounded-md text-sm ${selectedCategory.name==="Category"?"text-gray-700" : ""} ${categoryError?"border-red-500":""}`}
-                value={selectedCategory.id}
-                onChange={handleSelectChange}
-              >
-                <option value={-1} className="text-sm">Category</option>
-                {categories && categories.map((value,_) => (
-                  <option key={value.id} value={value.id} className="text-sm">
-                    {capitalizeFirst(value.name)}
-                  </option>
-                ))}
-              </select>
-            </section>
+            <SelectCategoryDropdown categories={categories} selectedCategory={selectedCategory} handleSelectChange={handleSelectChange} categoryError={categoryError} />
             <h3 className="text-lg">Add Tasks</h3>
             {taskList.map((task, index) => (
               <div key={index} className="flex w-full gap-2">
