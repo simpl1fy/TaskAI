@@ -244,7 +244,7 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
           'Content-type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ listTitle: data?.listTitle, newTasks: data?.tasks })
+        body: JSON.stringify({ listTitle: data?.listTitle, categoryId: selectedCategory.id, newTasks: data?.tasks })
       });
       const resData = await response.json();
       if(resData.success) {
