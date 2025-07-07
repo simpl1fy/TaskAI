@@ -216,10 +216,16 @@ interface Task {
   taskOrder: number | null;
 }
 
+interface Category {
+  id: number;
+  name: string;
+}
+
 interface TaskList {
   listId: number;
   listTitle: string;
   listCreatedAt: Date | null;
+  category: Category;
   tasks: Task[];
 }
 /**
@@ -278,6 +284,7 @@ tasksRouter.get("task_list/:id", requireAuth, async (c) => {
         .select()
         .from(tasksList)
         .innerJoin(tasks, eq(tasks.taskListId, taskListId))
+        .innerJoin(categories, eq(categories.id, tasksList.categoryId))
         .where(eq(tasksList.id, taskListId))
         .orderBy(tasks.order);
       // console.log("result from get query =", result);
@@ -294,6 +301,10 @@ tasksRouter.get("task_list/:id", requireAuth, async (c) => {
         listId: result[0].tasks_lists.id,
         listTitle: result[0].tasks_lists.title,
         listCreatedAt: result[0].tasks_lists.createdAt,
+        category: {
+          id: result[0].categories.id,
+          name: result[0].categories.name
+        },
         tasks: [],
       };
 
@@ -719,7 +730,7 @@ tasksRouter.put("/update/:listId", requireAuth, async (c) => {
     const listId = Number(c.req.param("listId"));
     const { userId } = c.get("authData");
 
-    const { listTitle, newTasks } = await c.req.json();
+    const { listTitle, categoryId, newTasks } = await c.req.json();
     console.log("Tasks received =", newTasks);
 
     if(!listTitle || typeof listTitle !== "string" || listTitle.trim() === "") {
@@ -730,6 +741,10 @@ tasksRouter.put("/update/:listId", requireAuth, async (c) => {
         return c.json({ success: false, message: "Task's cannot be empty" }, 400);
     }
 
+    if(!categoryId || Number.isNaN(categoryId)) {
+      return c.json({ success: false, message: "Category not provided" }, 400);
+    }
+
     const existingList = await db.select().from(tasksList).where(eq(tasksList.id, listId));
     if(!existingList || existingList[0].userId !== userId) {
         return c.json({ success: false, message: "Unauthorized or list not found!" }, 403);
@@ -737,7 +752,17 @@ tasksRouter.put("/update/:listId", requireAuth, async (c) => {
     // console.log("Existing List =", existingList);
 
     // updating taskList title
-    await db.update(tasksList).set({ title: listTitle }).where(eq(tasksList.id, listId));
+    const taskListTitleUpdate = await db.update(tasksList).set({ title: listTitle }).where(eq(tasksList.id, listId));
+
+    if(!taskListTitleUpdate) {
+      return c.json({ success: false, message: "Failed to update list title" }, 500);
+    }
+
+    const taskCategoryUpdate = await db.update(tasksList).set({ categoryId: categoryId }).where(eq(tasksList.id, listId));
+
+    if(!taskCategoryUpdate) {
+      return c.json({ success: false, message: "Failed to update task category!" }, 500);
+    }
     
 
     const tasksToInsert = newTasks.filter((task) => !task.taskId);

@@ -39,6 +39,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
   const [data, setData] = useState<GroupedTaskList[]>([]);
   const [createModal, setCreateModal] = useState(false);
   const [manageCategoriesModal, setManageCategoriesModal] = useState(false);
+  const [categoriesUpdated, setCategoriesUpdated] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>({
@@ -105,7 +106,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
       
       fetchCategories();
       
-    }, [])
+    }, [categoriesUpdated]);
 
   const handleChange = async (listIndex:number, taskIndex:number, taskId: number) => {
     const newData = [...data];
@@ -273,6 +274,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
       <ManageCategories
         open={manageCategoriesModal}
         setOpen={setManageCategoriesModal}
+        setCategoriesUpdated={setCategoriesUpdated}
       />
     </div>
   )  

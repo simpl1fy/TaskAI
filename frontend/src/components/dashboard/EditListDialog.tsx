@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
+import type { Category } from "@/types/category";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,7 @@ import { useAuth } from "@clerk/clerk-react";
 import { toast } from "sonner";
 import { CirclePlus, LoaderCircle, Trash2 } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
+import SelectCategoryDropdown from "./SelectCategoryDropdown";
 
 type PropTypes = {
   listId: number;
@@ -45,38 +47,73 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
   const [saveLoading, setSaveLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
+  const [categories, setCategories] = useState<Category[] | undefined>();
+  const [selectedCategory, setSelectedCategory] = useState<Category>({
+    id: -1,
+    name: "Category"
+  });
 
-  useEffect(() => {
-    
-    const fetchData = async () => {
-      setDataLoading(true);
+  const fetchData = async () => {
+    setDataLoading(true);
+    const token = await getToken();
+
+    const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
+
+    try {
+      const response = await fetch(`${baseUrl}/task/task_list/${listId}`, {
+        method: "GET",
+        headers: {
+          'Content-type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if(data.success) {
+        console.log(data.data);
+        setData(data.data);
+        setSelectedCategory(data.data.category);
+      } else {
+        toast.error("Failed to fetch list. Please try again later");
+      }
+      setDataLoading(false);
+    } catch(err) {
+      console.error(err);
+      setDataLoading(false);
+    }
+  }
+
+  const fetchCategories = async () => {
+    setDataLoading(true);
+    try {
       const token = await getToken();
-
       const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
-
-      try {
-        const response = await fetch(`${baseUrl}/task/task_list/${listId}`, {
+      const res = await fetch(`${baseUrl}/category/get_all`, {
           method: "GET",
           headers: {
-            'Content-type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            "Content-type": "application/json",
+            "Authorization": `Bearer ${token}`
           }
         });
-        const data = await response.json();
-        if(data.success) {
-          console.log(data.data);
-          setData(data.data);
+        const resData = await res.json();
+        console.log("Categories received =", data);
+        if(resData.success) {
+          setCategories(resData.data);
+          setDataLoading(false);
         } else {
-          toast.error("Failed to fetch list. Please try again later");
+          toast.error(resData.message);
+          setDataLoading(false);
         }
-        setDataLoading(false);
-      } catch(err) {
-        console.error(err);
-        setDataLoading(false);
-      }
+    } catch (err) {
+      console.error("An error occured while fetching categories =", err);
     }
+  }
+
+  useEffect(() => {
     if(open && listId) {
       fetchData();
+    }
+    if(open) {
+      fetchCategories();
     }
   }, [open]);
 
@@ -118,6 +155,20 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
         tasks: reOrderedTasks
       }
     })
+  }
+
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = Number(e.target.value);
+    console.log(selectedId);
+    const selected = categories?.find(cat => cat.id === selectedId);
+    if(selected) {
+      setSelectedCategory(selected);
+    } else {
+      setSelectedCategory({
+        id: -1,
+        name: "Category"
+      })
+    }
   }
 
   const handleDelete = async (index: number, taskId: number | null | undefined) => {
@@ -193,7 +244,7 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
           'Content-type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ listTitle: data?.listTitle, newTasks: data?.tasks })
+        body: JSON.stringify({ listTitle: data?.listTitle, categoryId: selectedCategory.id, newTasks: data?.tasks })
       });
       const resData = await response.json();
       if(resData.success) {
@@ -238,6 +289,7 @@ const EditListDialog = ({ listId, open, setOpen, isUpdated}: PropTypes) => {
                 <h4 className="text-lg font-semibold">Title</h4>
                 <Input type="text" className="selection:bg-blue-500 selection:text-white" value={data?.listTitle} onChange={(e) => handleTitleChange(e.target.value)} />
               </section>
+              <SelectCategoryDropdown categories={categories} selectedCategory={selectedCategory} handleSelectChange={handleSelectChange} />
               <section>
                 <h4 className="text-lg font-semibold">Tasks</h4>
                 {data?.tasks.map((value, index) => (
