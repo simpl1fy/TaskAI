@@ -234,9 +234,9 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
                   className="border rounded-md p-4 bg-white overflow-y-auto min-h-fit max-h-90 min-w-50 shadow-md mb-5"
                 >
                   <header className="flex justify-between mb-2">
-                    <h4 className="text-base sm:text-lg font-semibold">
+                    <h3 className="text-base sm:text-lg font-semibold">
                       {value.listTitle}
-                    </h4>
+                    </h3>
                     <DropDown id={value.listId} isUpdated={setListUpdated} />
                   </header>
                   {value.tasks.map((tValue, tIndex) => (

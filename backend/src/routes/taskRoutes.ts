@@ -414,7 +414,7 @@ tasksRouter.patch("/update_status", requireAuth, async (c) => {
   try {
     const { taskId, status } = await c.req.json();
     console.log(taskId, status);
-    if (typeof taskId !== "number" || typeof status !== "boolean") {
+    if (typeof taskId !== "number" || status === undefined || status === null) {
       return c.json({ success: false, message: "Invalid Input!" }, 400);
     }
 
@@ -772,7 +772,7 @@ tasksRouter.put("/update/:listId", requireAuth, async (c) => {
     if(tasksToInsert.length > 0) {
         const insertTasks = tasksToInsert.map((task, _) => ({
             title: task.taskTitle.trim(),
-            status: "incomplete",
+            status: "incomplete" as const,
             taskListId: listId,
             order: task.taskOrder
         }));
