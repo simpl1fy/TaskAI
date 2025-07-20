@@ -55,7 +55,7 @@ const tasksRouter = new Hono();
 type TaskItem = {
   taskId: number;
   taskTitle: string;
-  taskStatus: boolean | null;
+  taskStatus: string | null;
 };
 
 type GroupedTaskList = {
@@ -212,7 +212,7 @@ tasksRouter.get('/all_lists/:categoryId', requireAuth, async (c) => {
 interface Task {
   taskId: number;
   taskTitle: string;
-  taskStatus: boolean | null;
+  taskStatus: string | null;
   taskOrder: number | null;
 }
 
@@ -357,8 +357,8 @@ tasksRouter.get("task_list/:id", requireAuth, async (c) => {
  *                 type: integer
  *                 example: 42
  *               status:
- *                 type: boolean
- *                 example: true
+ *                 type: string
+ *                 example: completed
  *     responses:
  *       200:
  *         description: Task status updated successfully
@@ -420,7 +420,7 @@ tasksRouter.patch("/update_status", requireAuth, async (c) => {
 
     const res = await db
       .update(tasks)
-      .set({ status })
+      .set({ status: status })
       .where(eq(tasks.id, taskId));
 
     if (res.rowCount && res.rowCount > 0) {
@@ -772,7 +772,7 @@ tasksRouter.put("/update/:listId", requireAuth, async (c) => {
     if(tasksToInsert.length > 0) {
         const insertTasks = tasksToInsert.map((task, _) => ({
             title: task.taskTitle.trim(),
-            status: false,
+            status: "incomplete",
             taskListId: listId,
             order: task.taskOrder
         }));
