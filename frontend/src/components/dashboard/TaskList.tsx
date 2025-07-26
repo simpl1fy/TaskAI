@@ -8,8 +8,14 @@ import DropDown from "./DropDown";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import Masonry from "react-masonry-css";
-import { Command } from "lucide-react";
+import { Command, Check, Hammer } from "lucide-react";
 import { capitalizeFirst } from "@/helpers/capitalizeFirst";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "../ui/dropdown-menu.tsx"
 
 type TaskItem = {
   taskId: number;
@@ -109,39 +115,40 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
     fetchCategories();
   }, [categoriesUpdated]);
 
-  // const handleChange = async (listIndex:number, taskIndex:number, taskId: number) => {
-  //   const newData = [...data];
-  //   const task = newData[listIndex].tasks[taskIndex];
-  //   const status = !task.taskStatus;
-  //   task.taskStatus = status;
-  //   setData(newData);
+  // TODO - Fix the update route
+  const handleChange = async (listIndex: number, taskIndex: number, taskId: number, status: string) => {
+    const newData = [...data];
+    const task = newData[listIndex].tasks[taskIndex];
+    const prevStatus = task.taskStatus; // Get previous task status to revert back, if request fails.
+    task.taskStatus = status;
+    setData(newData);
 
-  //   try {
+    try {
 
-  //     const token = await getToken();
+      const token = await getToken();
 
-  //     const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
-  //     const response = await fetch(`${baseUrl}/task/update_status`, {
-  //       method: "PATCH",
-  //       headers: {
-  //         'Content-type': 'Application/json',
-  //         'Authorization': `Bearer ${token}`
-  //       },
-  //       body: JSON.stringify({ taskId: taskId, status: status })
-  //     })
+      const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
+      const response = await fetch(`${baseUrl}/task/update_status`, {
+        method: "PATCH",
+        headers: {
+          'Content-type': 'Application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ taskId: taskId, status: status })
+      })
 
-  //     const data = await response.json();
-  //     if(data.success) {
-  //       toast.success(data.message);
-  //     } else {
-  //       task.taskStatus = !task.taskStatus;
-  //       setData(newData);
-  //       toast.error("Failed to update task. Please try again later!");
-  //     }
-  //   } catch(err) {
-  //     console.error(err);
-  //   }
-  // }
+      const data = await response.json();
+      if (data.success) {
+        toast.success(data.message);
+      } else {
+        task.taskStatus = prevStatus;
+        setData(newData);
+        toast.error("Failed to update task. Please try again later!");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.ctrlKey && event.code === "KeyK") {
@@ -251,17 +258,21 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
                       key={tIndex}
                       className="flex items-center gap-2 mb-2 cursor-pointer"
                     >
-                      {tValue.taskStatus === "completed" && <span>✅</span>}
-                      {tValue.taskStatus === "work_in_progress" && (
-                        <span>🔨</span>
-                      )}
-                      {tValue.taskStatus === "incomplete" && <span>❌</span>}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          {tValue.taskStatus === "completed" ? <span className="bg-green-100 p-1 rounded-full"><Check className="text-sm text-green-500" /> </span> : tValue.taskStatus === "in_progress" ? <span className="bg-blue-100 p-1 rounded-full"><Hammer className="text-blue-500" /></ span> : <span className="bg-red-500 p-2 rounded-full"></span>}
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onSelect={() => handleChange(index, tIndex, tValue.taskId, "incomplete")}>Incomplete</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => handleChange(index, tIndex, tValue.taskId, "in_progress")}>Work in Progress</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => handleChange(index, tIndex, tValue.taskId, "completed")}>Complete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       <span
-                        className={`text-sm sm:text-base ${
-                          tValue.taskStatus === "completed"
-                            ? "line-through text-gray-400"
-                            : "text-gray-800"
-                        }`}
+                        className={`text-sm sm:text-base ${tValue.taskStatus === "completed"
+                          ? "line-through text-gray-400"
+                          : tValue.taskStatus === "work_in_progress" ? "text-bold" : "text-gray-800"
+                          }`}
                       >
                         {tValue.taskTitle}
                       </span>
