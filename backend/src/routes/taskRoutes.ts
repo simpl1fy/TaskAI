@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { db } from "../db/db";
-import { tasksList, tasks, users, categories } from "../db/schema";
+import { tasksList, tasks, categories } from "../db/schema";
 import { requireAuth } from "../middleware/requireAuth";
 import { eq, desc, and } from "drizzle-orm";
 
@@ -35,7 +35,7 @@ const tasksRouter = new Hono();
  *           description: Unique identifier for the task list
  *         listTitle:
  *           type: string
- *           description: Title of the task list
+ *            description: Title of the task list
  *         createdAt:
  *           type: string
  *           example: 2025-05-17 17:31:04.824857
@@ -55,7 +55,7 @@ const tasksRouter = new Hono();
 type TaskItem = {
   taskId: number;
   taskTitle: string;
-  taskStatus: boolean | null;
+  taskStatus: string | null;
 };
 
 type GroupedTaskList = {
@@ -112,78 +112,78 @@ type GroupedTaskList = {
  *                   type: string
  */
 tasksRouter.get('/all_lists/:categoryId', requireAuth, async (c) => {
-    try {
-        const { userId } = c.get('authData');
-        const categoryId = Number(c.req.param("categoryId"));
+  try {
+    const { userId } = c.get('authData');
+    const categoryId = Number(c.req.param("categoryId"));
 
-        console.log(categoryId);
+    console.log(categoryId);
 
-        if(!userId) {
-          return c.json({ success: false, message: "User ID not found!" }, 400);
-        }
-
-        if(categoryId !== -1) {
-          const allTasks = await db.select().from(tasksList).innerJoin(tasks, eq(tasksList.id, tasks.taskListId)).where(and(eq(tasksList.userId, userId), eq(tasksList.categoryId, categoryId))).orderBy(desc(tasksList.createdAt), tasks.order);
-          const grouped = allTasks.reduce<GroupedTaskList[]>((acc, row) => {
-          const listId = row.tasks_lists.id;
-
-          let existing = acc.find((item) => item.listId === listId);
-          const task = row.tasks?.id
-            ? {
-                taskId: row.tasks.id,
-                taskTitle: row.tasks.title,
-                taskStatus: row.tasks.status,
-              }
-            : null;
-
-          if (existing) {
-            if (task) existing.tasks.push(task);
-          } else {
-            acc.push({
-              listId: row.tasks_lists.id,
-              listTitle: row.tasks_lists.title,
-              createdAt: row.tasks_lists.createdAt,
-              tasks: task ? [task] : [],
-            });
-          }
-
-          return acc;
-        }, []);
-        return c.json({ success: true, allTasks: grouped }, 200);
-        }
-
-        const allTasks = await db.select().from(tasksList).innerJoin(tasks, eq(tasksList.id, tasks.taskListId)).where(eq(tasksList.userId, userId)).orderBy(desc(tasksList.createdAt), tasks.order);
-        // console.log(allTasks);
-        const grouped = allTasks.reduce<GroupedTaskList[]>((acc, row) => {
-          const listId = row.tasks_lists.id;
-
-          let existing = acc.find((item) => item.listId === listId);
-          const task = row.tasks?.id
-            ? {
-                taskId: row.tasks.id,
-                taskTitle: row.tasks.title,
-                taskStatus: row.tasks.status,
-              }
-            : null;
-
-          if (existing) {
-            if (task) existing.tasks.push(task);
-          } else {
-            acc.push({
-              listId: row.tasks_lists.id,
-              listTitle: row.tasks_lists.title,
-              createdAt: row.tasks_lists.createdAt,
-              tasks: task ? [task] : [],
-            });
-          }
-
-          return acc;
-        }, []);
-        return c.json({ success: true, allTasks: grouped }, 200);
-    } catch(err) {
-        console.error("An error occured when fetching all tasks lists =", err);
-        return c.json({ message: "Internal Server Error" }, 500);
+    if (!userId) {
+      return c.json({ success: false, message: "User ID not found!" }, 400);
     }
+
+    if (categoryId !== -1) {
+      const allTasks = await db.select().from(tasksList).innerJoin(tasks, eq(tasksList.id, tasks.taskListId)).where(and(eq(tasksList.userId, userId), eq(tasksList.categoryId, categoryId))).orderBy(desc(tasksList.createdAt), tasks.order);
+      const grouped = allTasks.reduce<GroupedTaskList[]>((acc, row) => {
+        const listId = row.tasks_lists.id;
+
+        let existing = acc.find((item) => item.listId === listId);
+        const task = row.tasks?.id
+          ? {
+            taskId: row.tasks.id,
+            taskTitle: row.tasks.title,
+            taskStatus: row.tasks.status,
+          }
+          : null;
+
+        if (existing) {
+          if (task) existing.tasks.push(task);
+        } else {
+          acc.push({
+            listId: row.tasks_lists.id,
+            listTitle: row.tasks_lists.title,
+            createdAt: row.tasks_lists.createdAt,
+            tasks: task ? [task] : [],
+          });
+        }
+
+        return acc;
+      }, []);
+      return c.json({ success: true, allTasks: grouped }, 200);
+    }
+
+    const allTasks = await db.select().from(tasksList).innerJoin(tasks, eq(tasksList.id, tasks.taskListId)).where(eq(tasksList.userId, userId)).orderBy(desc(tasksList.createdAt), tasks.order);
+    // console.log(allTasks);
+    const grouped = allTasks.reduce<GroupedTaskList[]>((acc, row) => {
+      const listId = row.tasks_lists.id;
+
+      let existing = acc.find((item) => item.listId === listId);
+      const task = row.tasks?.id
+        ? {
+          taskId: row.tasks.id,
+          taskTitle: row.tasks.title,
+          taskStatus: row.tasks.status,
+        }
+        : null;
+
+      if (existing) {
+        if (task) existing.tasks.push(task);
+      } else {
+        acc.push({
+          listId: row.tasks_lists.id,
+          listTitle: row.tasks_lists.title,
+          createdAt: row.tasks_lists.createdAt,
+          tasks: task ? [task] : [],
+        });
+      }
+
+      return acc;
+    }, []);
+    return c.json({ success: true, allTasks: grouped }, 200);
+  } catch (err) {
+    console.error("An error occured when fetching all tasks lists =", err);
+    return c.json({ message: "Internal Server Error" }, 500);
+  }
 });
 
 /**
@@ -212,7 +212,7 @@ tasksRouter.get('/all_lists/:categoryId', requireAuth, async (c) => {
 interface Task {
   taskId: number;
   taskTitle: string;
-  taskStatus: boolean | null;
+  taskStatus: string | null;
   taskOrder: number | null;
 }
 
@@ -272,65 +272,65 @@ interface TaskList {
  *                   example: "Internal Server Error"
  */
 tasksRouter.get("task_list/:id", requireAuth, async (c) => {
-    try {
-      const taskListId = Number(c.req.param("id"));
-      const { userId } = c.get("authData");
+  try {
+    const taskListId = Number(c.req.param("id"));
+    const { userId } = c.get("authData");
 
-      if (isNaN(taskListId)) {
-        return c.json({ success: false, message: "Invalid Input" });
-      }
-
-      const result = await db
-        .select()
-        .from(tasksList)
-        .innerJoin(tasks, eq(tasks.taskListId, taskListId))
-        .innerJoin(categories, eq(categories.id, tasksList.categoryId))
-        .where(eq(tasksList.id, taskListId))
-        .orderBy(tasks.order);
-      // console.log("result from get query =", result);
-
-      if (result.length === 0 || result[0].tasks_lists.userId !== userId) {
-        return c.json(
-          { success: false, message: "Unauthorized or not found!" },
-          404
-        );
-      }
-
-      // First, get the task list data from the first row
-      const listData: TaskList = {
-        listId: result[0].tasks_lists.id,
-        listTitle: result[0].tasks_lists.title,
-        listCreatedAt: result[0].tasks_lists.createdAt,
-        category: {
-          id: result[0].categories.id,
-          name: result[0].categories.name
-        },
-        tasks: [],
-      };
-
-      // Create a Set to track which task IDs we've already processed to prevent duplicates
-      const processedTaskIds = new Set();
-
-      // Process each task, making sure we don't add duplicates
-      result.forEach((row) => {
-        // Only process if there's a task and we haven't seen this task ID before
-        if (row.tasks && row.tasks.id && !processedTaskIds.has(row.tasks.id)) {
-          processedTaskIds.add(row.tasks.id);
-
-          listData.tasks.push({
-            taskId: row.tasks.id,
-            taskTitle: row.tasks.title,
-            taskStatus: row.tasks.status,
-            taskOrder: row.tasks.order,
-          });
-        }
-      });
-
-      return c.json({ success: true, data: listData });
-    } catch(err) {
-        console.error("An error occured when fetching single task list =", err);
-        return c.json({ message: "Internal Server Error" }, 500);
+    if (isNaN(taskListId)) {
+      return c.json({ success: false, message: "Invalid Input" });
     }
+
+    const result = await db
+      .select()
+      .from(tasksList)
+      .innerJoin(tasks, eq(tasks.taskListId, taskListId))
+      .innerJoin(categories, eq(categories.id, tasksList.categoryId))
+      .where(eq(tasksList.id, taskListId))
+      .orderBy(tasks.order);
+    // console.log("result from get query =", result);
+
+    if (result.length === 0 || result[0].tasks_lists.userId !== userId) {
+      return c.json(
+        { success: false, message: "Unauthorized or not found!" },
+        404
+      );
+    }
+
+    // First, get the task list data from the first row
+    const listData: TaskList = {
+      listId: result[0].tasks_lists.id,
+      listTitle: result[0].tasks_lists.title,
+      listCreatedAt: result[0].tasks_lists.createdAt,
+      category: {
+        id: result[0].categories.id,
+        name: result[0].categories.name
+      },
+      tasks: [],
+    };
+
+    // Create a Set to track which task IDs we've already processed to prevent duplicates
+    const processedTaskIds = new Set();
+
+    // Process each task, making sure we don't add duplicates
+    result.forEach((row) => {
+      // Only process if there's a task and we haven't seen this task ID before
+      if (row.tasks && row.tasks.id && !processedTaskIds.has(row.tasks.id)) {
+        processedTaskIds.add(row.tasks.id);
+
+        listData.tasks.push({
+          taskId: row.tasks.id,
+          taskTitle: row.tasks.title,
+          taskStatus: row.tasks.status,
+          taskOrder: row.tasks.order,
+        });
+      }
+    });
+
+    return c.json({ success: true, data: listData });
+  } catch (err) {
+    console.error("An error occured when fetching single task list =", err);
+    return c.json({ message: "Internal Server Error" }, 500);
+  }
 });
 
 
@@ -357,8 +357,8 @@ tasksRouter.get("task_list/:id", requireAuth, async (c) => {
  *                 type: integer
  *                 example: 42
  *               status:
- *                 type: boolean
- *                 example: true
+ *                 type: string
+ *                 example: completed
  *     responses:
  *       200:
  *         description: Task status updated successfully
@@ -414,13 +414,13 @@ tasksRouter.patch("/update_status", requireAuth, async (c) => {
   try {
     const { taskId, status } = await c.req.json();
     console.log(taskId, status);
-    if (typeof taskId !== "number" || typeof status !== "boolean") {
+    if (typeof taskId !== "number" || status === undefined || status === null) {
       return c.json({ success: false, message: "Invalid Input!" }, 400);
     }
 
     const res = await db
       .update(tasks)
-      .set({ status })
+      .set({ status: status })
       .where(eq(tasks.id, taskId));
 
     if (res.rowCount && res.rowCount > 0) {
@@ -496,29 +496,29 @@ tasksRouter.patch("/update_status", requireAuth, async (c) => {
  */
 
 tasksRouter.delete('/delete_task/:id', requireAuth, async (c) => {
-    try {
-      const id = Number(c.req.param("id"));
-      // const { userId } = c.get("authData");
+  try {
+    const id = Number(c.req.param("id"));
+    // const { userId } = c.get("authData");
 
-      if (isNaN(id)) {
-        return c.json({ success: false, message: "Invalid Input" });
-      }
-
-      const res = await db.delete(tasks).where(eq(tasks.id, id)).returning();
-      if (res.length == 0) {
-        return c.json(
-          { success: false, message: "Task not found or already deleted" },
-          404
-        );
-      }
-      return c.json(
-        { success: true, message: "Deleted Task Successfully" },
-        200
-      );
-    } catch(err) {
-        console.error("An error occured while deleting individual tasks =", err);
-        return c.json({ message: "Internal Server Error" });
+    if (isNaN(id)) {
+      return c.json({ success: false, message: "Invalid Input" });
     }
+
+    const res = await db.delete(tasks).where(eq(tasks.id, id)).returning();
+    if (res.length == 0) {
+      return c.json(
+        { success: false, message: "Task not found or already deleted" },
+        404
+      );
+    }
+    return c.json(
+      { success: true, message: "Deleted Task Successfully" },
+      200
+    );
+  } catch (err) {
+    console.error("An error occured while deleting individual tasks =", err);
+    return c.json({ message: "Internal Server Error" });
+  }
 });
 
 /**
@@ -591,44 +591,44 @@ tasksRouter.delete('/delete_task/:id', requireAuth, async (c) => {
  *               type: object*
 */
 tasksRouter.post('/add_list', requireAuth, async (c) => {
-    try {
-        const { userId } = c.get('authData');
-        const { title, tasksArray, category } = await c.req.json();
+  try {
+    const { userId } = c.get('authData');
+    const { title, tasksArray, category } = await c.req.json();
 
-        if(!title || typeof title !== "string") {
-            return c.json({ success: false, message: "Title is required!" });
-        }
-
-        if (!Array.isArray(tasksArray) || tasksArray.length === 0) {
-          return c.json({ success: false, message: "Tasks are required!" });
-        }
-
-        if(category.id === -1 || Number.isNaN(category.id) ||  category.id === undefined) {
-          return c.json({ success: false, message: "Please select a category" });
-        }
-
-        const insertedList = await db.insert(tasksList).values({ userId, title, categoryId: category.id }).returning({ insertedId: tasksList.id});
-        // console.log(insertedList);
-        const listId = insertedList[0]?.insertedId;
-        
-        if(!listId) {
-            return c.json({ success: false, message: "Failed to insert task list" });
-        }
-
-        const taskRows = tasksArray.map((taskTitle: string, index) => ({
-          title: taskTitle,
-          taskListId: listId,
-          order: index
-        }));
-
-        await db.insert(tasks).values(taskRows);
-
-        return c.json({ success: true, message: "Task List added successfully" });
-
-    } catch(err) {
-        console.error("An error occured while adding task list =", err);
-        return c.json({ message: "Internal Server Error" }, 500);
+    if (!title || typeof title !== "string") {
+      return c.json({ success: false, message: "Title is required!" });
     }
+
+    if (!Array.isArray(tasksArray) || tasksArray.length === 0) {
+      return c.json({ success: false, message: "Tasks are required!" });
+    }
+
+    if (category.id === -1 || Number.isNaN(category.id) || category.id === undefined) {
+      return c.json({ success: false, message: "Please select a category" });
+    }
+
+    const insertedList = await db.insert(tasksList).values({ userId, title, categoryId: category.id }).returning({ insertedId: tasksList.id });
+    // console.log(insertedList);
+    const listId = insertedList[0]?.insertedId;
+
+    if (!listId) {
+      return c.json({ success: false, message: "Failed to insert task list" });
+    }
+
+    const taskRows = tasksArray.map((taskTitle: string, index) => ({
+      title: taskTitle,
+      taskListId: listId,
+      order: index
+    }));
+
+    await db.insert(tasks).values(taskRows);
+
+    return c.json({ success: true, message: "Task List added successfully" });
+
+  } catch (err) {
+    console.error("An error occured while adding task list =", err);
+    return c.json({ message: "Internal Server Error" }, 500);
+  }
 });
 
 
@@ -733,51 +733,51 @@ tasksRouter.put("/update/:listId", requireAuth, async (c) => {
     const { listTitle, categoryId, newTasks } = await c.req.json();
     console.log("Tasks received =", newTasks);
 
-    if(!listTitle || typeof listTitle !== "string" || listTitle.trim() === "") {
-        return c.json({ success: false, message: "List title is required!" }, 400);
+    if (!listTitle || typeof listTitle !== "string" || listTitle.trim() === "") {
+      return c.json({ success: false, message: "List title is required!" }, 400);
     }
 
-    if(!Array.isArray(newTasks) || newTasks.some(task => !task.taskTitle || task.taskTitle.trim() === "")) {
-        return c.json({ success: false, message: "Task's cannot be empty" }, 400);
+    if (!Array.isArray(newTasks) || newTasks.some(task => !task.taskTitle || task.taskTitle.trim() === "")) {
+      return c.json({ success: false, message: "Task's cannot be empty" }, 400);
     }
 
-    if(!categoryId || Number.isNaN(categoryId)) {
+    if (!categoryId || Number.isNaN(categoryId)) {
       return c.json({ success: false, message: "Category not provided" }, 400);
     }
 
     const existingList = await db.select().from(tasksList).where(eq(tasksList.id, listId));
-    if(!existingList || existingList[0].userId !== userId) {
-        return c.json({ success: false, message: "Unauthorized or list not found!" }, 403);
+    if (!existingList || existingList[0].userId !== userId) {
+      return c.json({ success: false, message: "Unauthorized or list not found!" }, 403);
     }
     // console.log("Existing List =", existingList);
 
     // updating taskList title
     const taskListTitleUpdate = await db.update(tasksList).set({ title: listTitle }).where(eq(tasksList.id, listId));
 
-    if(!taskListTitleUpdate) {
+    if (!taskListTitleUpdate) {
       return c.json({ success: false, message: "Failed to update list title" }, 500);
     }
 
     const taskCategoryUpdate = await db.update(tasksList).set({ categoryId: categoryId }).where(eq(tasksList.id, listId));
 
-    if(!taskCategoryUpdate) {
+    if (!taskCategoryUpdate) {
       return c.json({ success: false, message: "Failed to update task category!" }, 500);
     }
-    
+
 
     const tasksToInsert = newTasks.filter((task) => !task.taskId);
     const tasksToUpdate = newTasks.filter((task) => task.taskId);
 
     // Insert new tasks
-    if(tasksToInsert.length > 0) {
-        const insertTasks = tasksToInsert.map((task, _) => ({
-            title: task.taskTitle.trim(),
-            status: false,
-            taskListId: listId,
-            order: task.taskOrder
-        }));
+    if (tasksToInsert.length > 0) {
+      const insertTasks = tasksToInsert.map((task, _) => ({
+        title: task.taskTitle.trim(),
+        status: "incomplete" as const,
+        taskListId: listId,
+        order: task.taskOrder
+      }));
 
-        await db.insert(tasks).values(insertTasks);
+      await db.insert(tasks).values(insertTasks);
     }
 
     for (let i = 0; i < tasksToUpdate.length; i++) {
@@ -858,21 +858,21 @@ tasksRouter.put("/update/:listId", requireAuth, async (c) => {
  *                   type: string
  *                   example: Internal Server Error
  */
-tasksRouter.delete("/delete_list", requireAuth, async(c) => {
-    try {
-        const { taskListId } = await c.req.json();
+tasksRouter.delete("/delete_list", requireAuth, async (c) => {
+  try {
+    const { taskListId } = await c.req.json();
 
-        if(typeof taskListId !== "number") {
-            return c.json({ success: false, message: "Invalid Input" });
-        }
-        const res = await db.delete(tasksList).where(eq(tasksList.id, taskListId));
-        console.log(res);
-
-        return c.json({ success: true, message: "List deleted successfully" }, 200);
-    } catch(err) {
-        console.error("An error occured while deleting list =", err);
-        return c.json({ message: "Internal Server Error" }, 500);
+    if (typeof taskListId !== "number") {
+      return c.json({ success: false, message: "Invalid Input" });
     }
+    const res = await db.delete(tasksList).where(eq(tasksList.id, taskListId));
+    console.log(res);
+
+    return c.json({ success: true, message: "List deleted successfully" }, 200);
+  } catch (err) {
+    console.error("An error occured while deleting list =", err);
+    return c.json({ message: "Internal Server Error" }, 500);
+  }
 });
 
 export default tasksRouter;
