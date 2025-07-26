@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { toast } from "sonner";
 import CreateList from "./CreateList";
@@ -9,13 +9,13 @@ import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import Masonry from "react-masonry-css";
 import { Command, Check, Hammer } from "lucide-react";
-import { capitalizeFirst } from "@/helpers/capitalizeFirst";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
-} from "../ui/dropdown-menu.tsx"
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "../ui/dropdown-menu"
 
 type TaskItem = {
   taskId: number;
@@ -47,10 +47,12 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
   const [categoriesUpdated, setCategoriesUpdated] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
   const [categories, setCategories] = useState<CategoryType[]>([]);
+  // const [selectedCategoryId, setSelectedCategoryId] = useState<number>();
+  // const [selectedCategoryName, setSelectedCategoryName]
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>({
     id: -1,
-    name: "All",
-  });
+    name: "All categories"
+  })
 
   const { getToken } = useAuth();
 
@@ -85,7 +87,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
       }
     };
     fetchTaskList();
-  }, [listUpdated, selectedCategory]);
+  }, [listUpdated, selectedCategory.id]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -165,21 +167,6 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
     };
   }, []);
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = Number(e.target.value);
-    console.log(selectedId);
-    if (selectedId === -2) {
-      setManageCategoriesModal(true);
-      return;
-    }
-    const selected = categories?.find((cat) => cat.id === selectedId);
-    if (selected) {
-      setSelectedCategory(selected);
-    } else {
-      setSelectedCategory({ id: -1, name: "All" });
-    }
-  };
-
   const breakPointColumnsObj = {
     default: 4,
     1100: 3,
@@ -187,40 +174,43 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
     500: 1,
   };
 
+  const handleCategoryClick = (categoryId: number, categoryName: string) => {
+    setSelectedCategory({
+      id: categoryId,
+      name: categoryName
+    })
+  }
   return (
-    <div className="shadow-lg p-4 sm:p-6 rounded-lg bg-white w-full shadow-md">
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-        <h3 className="text-xl sm:text-2xl font-bold">Your Tasks</h3>
-        <div>
-          <select
-            className="border border-1 p-2 rounded-md mr-3"
-            value={selectedCategory?.id}
-            onChange={handleSelectChange}
-          >
-            <option value={-1}>All tasks</option>
-            {categories &&
-              categories.map((value, _) => (
-                <option key={value.id} value={value.id}>
-                  {capitalizeFirst(value.name)}
-                </option>
-              ))}
-            <hr />
-            <option value={-2}>Manage Categories</option>
-          </select>
-          <Button
-            className="cursor-pointer bg-gray-200 hover:bg-gray-300 text-black w-full sm:w-auto"
-            onClick={() => setCreateModal(true)}
-          >
-            <span className="flex items-center gap-4">
-              Create your own List
-              <kbd className="text-sm flex items-center">
-                <Command className="size-3" />
-                <span>+K</span>
-              </kbd>
-            </span>
-          </Button>
-        </div>
-      </header>
+    <div className="shadow-lg p-4 sm:p-6 rounded-lg bg-white w-full shadow-md"> <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+      <h3 className="text-xl sm:text-2xl font-bold">Your Tasks</h3>
+      <div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="mr-5 cursor-pointer">{selectedCategory.name}</Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem className="cursor-pointer" onSelect={() => handleCategoryClick(-1, "All tasks")}>All tasks</DropdownMenuItem>
+            {categories.map((cat, _) => (
+              <DropdownMenuItem className="cursor-pointer" onSelect={() => handleCategoryClick(cat.id, cat.name)}>{cat.name}</DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setManageCategoriesModal(true)}>Manage Categories</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Button
+          className="cursor-pointer bg-gray-200 hover:bg-gray-300 text-black w-full sm:w-auto"
+          onClick={() => setCreateModal(true)}
+        >
+          <span className="flex items-center gap-4">
+            Create your own List
+            <kbd className="text-sm flex items-center">
+              <Command className="size-3" />
+              <span>+K</span>
+            </kbd>
+          </span>
+        </Button>
+      </div>
+    </header>
 
       {dataLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4">
@@ -263,9 +253,9 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
                           {tValue.taskStatus === "completed" ? <span className="bg-green-100 p-1 rounded-full"><Check className="text-sm text-green-500" /> </span> : tValue.taskStatus === "in_progress" ? <span className="bg-blue-100 p-1 rounded-full"><Hammer className="text-blue-500" /></ span> : <span className="bg-red-500 p-2 rounded-full"></span>}
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem onSelect={() => handleChange(index, tIndex, tValue.taskId, "incomplete")}>Incomplete</DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleChange(index, tIndex, tValue.taskId, "in_progress")}>Work in Progress</DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleChange(index, tIndex, tValue.taskId, "completed")}>Complete</DropdownMenuItem>
+                          <DropdownMenuItem className="cursor-pointer" onSelect={() => handleChange(index, tIndex, tValue.taskId, "incomplete")}>Incomplete</DropdownMenuItem>
+                          <DropdownMenuItem className="cursor-pointer" onSelect={() => handleChange(index, tIndex, tValue.taskId, "in_progress")}>Work in Progress</DropdownMenuItem>
+                          <DropdownMenuItem className="cursor-pointer" onSelect={() => handleChange(index, tIndex, tValue.taskId, "completed")}>Complete</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                       <span
