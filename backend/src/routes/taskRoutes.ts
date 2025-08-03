@@ -35,7 +35,7 @@ const tasksRouter = new Hono();
  *           description: Unique identifier for the task list
  *         listTitle:
  *           type: string
- *            description: Title of the task list
+ *           description: Title of the task list
  *         createdAt:
  *           type: string
  *           example: 2025-05-17 17:31:04.824857
@@ -51,7 +51,6 @@ const tasksRouter = new Hono();
  *         - listTitle
  *         - tasks
  */
-
 type TaskItem = {
   taskId: number;
   taskTitle: string;

@@ -8,7 +8,7 @@ import DropDown from "./DropDown";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import Masonry from "react-masonry-css";
-import { Command, Check, Hammer } from "lucide-react";
+import { Command, Check, Hammer, CircleDashed } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -250,7 +250,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
                     >
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          {tValue.taskStatus === "completed" ? <span className="bg-green-100 p-1 rounded-full"><Check className="text-sm text-green-500" /> </span> : tValue.taskStatus === "in_progress" ? <span className="bg-blue-100 p-1 rounded-full"><Hammer className="text-blue-500" /></ span> : <span className="bg-red-500 p-2 rounded-full"></span>}
+                          {tValue.taskStatus === "completed" ? <span className="bg-green-100 p-1 rounded-full"><Check className="text-sm text-green-500" /> </span> : tValue.taskStatus === "in_progress" ? <span className="bg-blue-100 p-1 rounded-full"><Hammer className="text-blue-500" /></ span> : <span className="bg-red-200 rounded-full"><CircleDashed className="text-red-800 text-sm" /></span>}
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
                           <DropdownMenuItem className="cursor-pointer" onSelect={() => handleChange(index, tIndex, tValue.taskId, "incomplete")}>Incomplete</DropdownMenuItem>
