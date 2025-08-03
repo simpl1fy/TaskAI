@@ -250,12 +250,12 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
                     >
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          {tValue.taskStatus === "completed" ? <span className="bg-green-100 p-1 rounded-full"><Check className="text-sm text-green-500" /> </span> : tValue.taskStatus === "in_progress" ? <span className="bg-blue-100 p-1 rounded-full"><Hammer className="text-blue-500" /></ span> : <span className="bg-red-200 rounded-full"><CircleDashed className="text-red-800 text-sm" /></span>}
+                          {tValue.taskStatus === "completed" ? <span className="bg-green-200 rounded-full"><Check className="text-sm text-green-800" /> </span> : tValue.taskStatus === "in_progress" ? <span className="bg-blue-200 rounded-full"><Hammer className="text-blue-800" /></ span> : <span className="bg-red-200 rounded-full"><CircleDashed className="text-red-800 text-sm" /></span>}
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem className="cursor-pointer" onSelect={() => handleChange(index, tIndex, tValue.taskId, "incomplete")}>Incomplete</DropdownMenuItem>
-                          <DropdownMenuItem className="cursor-pointer" onSelect={() => handleChange(index, tIndex, tValue.taskId, "in_progress")}>Work in Progress</DropdownMenuItem>
-                          <DropdownMenuItem className="cursor-pointer" onSelect={() => handleChange(index, tIndex, tValue.taskId, "completed")}>Complete</DropdownMenuItem>
+                          <DropdownMenuItem className="cursor-pointer" onSelect={() => handleChange(index, tIndex, tValue.taskId, "incomplete")} disabled={tValue.taskStatus === "incomplete"}>Incomplete</DropdownMenuItem>
+                          <DropdownMenuItem className="cursor-pointer" onSelect={() => handleChange(index, tIndex, tValue.taskId, "in_progress")} disabled={tValue.taskStatus === "in_progress"}>Work in Progress</DropdownMenuItem>
+                          <DropdownMenuItem className="cursor-pointer" onSelect={() => handleChange(index, tIndex, tValue.taskId, "completed")} disabled={tValue.taskStatus === "completed"}>Complete</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                       <span
