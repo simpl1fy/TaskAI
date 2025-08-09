@@ -3,9 +3,9 @@ import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { useAuth } from '@clerk/clerk-react';
 import CreateList from './CreateList';
-import { LoaderCircle, Command, CornerDownLeft, PlusIcon, Plus } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import type { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction, KeyboardEvent } from 'react';
 
 type ResponseData = {
   listTitle: string;
@@ -23,7 +23,7 @@ const AITextArea = ({ setListUpdated }: { setListUpdated: Dispatch<SetStateActio
 
   const handleGenerate = async() => {
     setLoading(true);
-    if(prompt.length < 0) {
+    if(prompt.trim().length == 0) {
       toast.error("Prompt cannot be empty!");
       setLoading(false);
       return;
@@ -60,8 +60,8 @@ const AITextArea = ({ setListUpdated }: { setListUpdated: Dispatch<SetStateActio
 
   const handleClear = () => setPrompt("");
 
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if(event.ctrlKey && event.key === "Enter") {
+  const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if(event.key === "Enter") {
       event.preventDefault();
       handleGenerate();
     }
@@ -69,14 +69,6 @@ const AITextArea = ({ setListUpdated }: { setListUpdated: Dispatch<SetStateActio
       handleClear();
     }
   }
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-  
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    }
-  }, []);
   
 
   return (
@@ -86,6 +78,7 @@ const AITextArea = ({ setListUpdated }: { setListUpdated: Dispatch<SetStateActio
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
         className="mb-3"
+        onKeyDown={handleKeyDown}
       />
   
       <div className="flex flex-col sm:flex-row gap-2">
@@ -97,7 +90,7 @@ const AITextArea = ({ setListUpdated }: { setListUpdated: Dispatch<SetStateActio
           {loading ? (
             <LoaderCircle className="animate-spin" />
           ) : (
-            <span className='flex gap-4 items-center'>+ Generate Tasks <kbd className='text-xs flex items-center gap-1'><Command className='size-3' /><PlusIcon className='size-3' /><CornerDownLeft className='size-3' /></kbd></span>
+            <span className='flex gap-4 items-center'>+ Generate Tasks </span>
           )}
         </Button>
   
