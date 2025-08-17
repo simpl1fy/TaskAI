@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/astro/components";
 import { MoveRight } from "lucide-react";
+import Navbar from "@/components/Navbar.astro";
 
 // Features array
 const features = [
@@ -46,6 +47,7 @@ const steps = [
 
 <BaseLayout title="TaskAI | Home Page | Signup to start" description="TaskAI home page, signup to start managing your life, in a better way.">
   <div>
+    <Navbar />
     <!-- Heading Section -->
     <header
       class="flex flex-col justify-center items-center py-40 bg-violet-50 px-10"

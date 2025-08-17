@@ -12,13 +12,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { Input } from "../ui/input";
+} from "../../../../ui/dropdown-menu";
+import { Input } from "../../../../ui/input";
 import { Plus, Loader2, Edit, Trash2, MoveRight } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import { toast } from "sonner";
-import { Skeleton } from "../ui/skeleton";
-import { Button } from "../ui/button";
+import { Skeleton } from "../../../../ui/skeleton";
+import { Button } from "../../../../ui/button";
 import { capitalizeFirst } from "@/helpers/capitalizeFirst";
 
 type PropTypes = {

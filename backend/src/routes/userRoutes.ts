@@ -3,6 +3,7 @@ import { db } from "../db/db";
 import { users, categories } from "../db/schema";
 import { createClerkClient } from "@clerk/backend";
 import { eq } from "drizzle-orm";
+import { requireAuth } from "../middleware/requireAuth";
 
 const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 const userRouter = new Hono();
@@ -78,6 +79,28 @@ userRouter.post('/sync', async(c) => {
         return c.json({ success: true, message: "Data already present" });
     } catch(err) {
         console.error("An error occured =", err);
+        return c.json({ error: "Internal Server Error" }, 500);
+    }
+})
+
+userRouter.get('/info', requireAuth,async (c) => {
+    try {
+        const { userId } = c.get("authData");
+
+        if(!userId) {
+            return c.json({ error: "No User Id found!" }, 400);
+        }
+
+        const user = await db.select().from(users).where(eq(users.id, userId));
+
+        if(!user) {
+            return c.json({ error: "No user found with the given id" }, 404);
+        }
+
+        return c.json({ success: true, name: user[0]?.name, email: user[0].email })
+
+    } catch (err) {
+        console.error("An error occured while fetching user info = " + err);
         return c.json({ error: "Internal Server Error" }, 500);
     }
 })

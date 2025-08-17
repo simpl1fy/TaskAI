@@ -10,12 +10,12 @@ import {
   DialogTitle,
   DialogClose,
 } from "@/components/ui/dialog";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { Button } from "../../../../ui/button";
+import { Input } from "../../../../ui/input";
 import { useAuth } from "@clerk/clerk-react";
 import { toast } from "sonner";
 import { CirclePlus, LoaderCircle, Trash2 } from "lucide-react";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "../../../../ui/skeleton";
 import SelectCategoryDropdown from "./SelectCategoryDropdown";
 
 type PropTypes = {

@@ -5,8 +5,8 @@ import CreateList from "./CreateList";
 import ManageCategories from "./ManageCategories";
 import { useAuth } from "@clerk/clerk-react";
 import DropDown from "./DropDown";
-import { Button } from "../ui/button";
-import { Skeleton } from "../ui/skeleton";
+import { Button } from "../../../../ui/button";
+import { Skeleton } from "../../../../ui/skeleton";
 import Masonry from "react-masonry-css";
 import { Command, Check, Hammer, CircleDashed } from "lucide-react";
 import {
@@ -15,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "../ui/dropdown-menu"
+} from "../../../../ui/dropdown-menu"
 
 type TaskItem = {
   taskId: number;
@@ -168,8 +168,8 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
   }, []);
 
   const breakPointColumnsObj = {
-    default: 4,
-    1100: 3,
+    default: 3,
+    1100: 2,
     700: 2,
     500: 1,
   };
@@ -181,7 +181,7 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
     })
   }
   return (
-    <div className="shadow-lg p-4 sm:p-6 rounded-lg bg-white w-full shadow-md"> <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+    <div className="p-4 sm:p-6 rounded-lg bg-white w-full shadow-md"> <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
       <h3 className="text-xl sm:text-2xl font-bold">Your Tasks</h3>
       <div>
         <DropdownMenu>
@@ -228,14 +228,14 @@ const TaskList = ({ listUpdated, setListUpdated }: PropTypes) => {
         <div>
           <Masonry
             breakpointCols={breakPointColumnsObj}
-            className="flex w-auto -ml-4"
+            className="flex -ml-4"
             columnClassName="pl-4 bg-clip-padding"
           >
             {data.length > 0 &&
               data.map((value, index) => (
                 <div
                   key={index}
-                  className="border rounded-md p-4 bg-white overflow-y-auto min-h-fit max-h-90 min-w-50 shadow-md mb-5"
+                  className="border rounded-md p-4 bg-white overflow-y-auto min-h-fit max-h-90 shadow-md mb-5"
                 >
                   <header className="flex justify-between mb-2">
                     <h3 className="text-base sm:text-lg font-semibold">

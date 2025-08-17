@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Textarea } from '../ui/textarea';
-import { Button } from '../ui/button';
+import { useState } from 'react';
+import { Textarea } from '../../../../ui/textarea';
+import { Button } from '../../../../ui/button';
 import { useAuth } from '@clerk/clerk-react';
 import CreateList from './CreateList';
 import { LoaderCircle } from 'lucide-react';

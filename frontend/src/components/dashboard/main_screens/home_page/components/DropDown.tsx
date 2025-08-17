@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogClose
 } from "@/components/ui/dialog"
-import { Button } from "../ui/button";
+import { Button } from "../../../../ui/button";
 import { EllipsisVertical } from "lucide-react";
 import { Trash2, PenBoxIcon } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";

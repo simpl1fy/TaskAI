@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { Button } from "../ui/button";
-import { Skeleton } from "../ui/skeleton";
+import { Button } from "../../../../ui/button";
+import { Skeleton } from "../../../../ui/skeleton";
 import {
     Dialog,
     DialogContent,
@@ -11,7 +11,7 @@ import {
     DialogTitle,
     DialogClose,
   } from "@/components/ui/dialog";
-import { Input } from "../ui/input";
+import { Input } from "../../../../ui/input";
 import { Trash } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import { toast } from "sonner";
