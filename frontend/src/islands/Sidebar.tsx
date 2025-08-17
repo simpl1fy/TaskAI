@@ -117,7 +117,7 @@ export default function Sidebar({
             <button
               key={index}
               className={clsx(
-                "mb-5 text-sm flex items-center p-2 gap-4 cursor-pointer",
+                "mb-3 text-sm flex items-center p-2 gap-4 cursor-pointer",
                 collapsed
                   ? "justify-center rounded-full"
                   : "rounded-lg hover:bg-violet-300 hover:shadow-sm transition-colors"
