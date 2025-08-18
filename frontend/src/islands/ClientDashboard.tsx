@@ -17,7 +17,7 @@ const ClientDashboard = () => {
         style={{ gridTemplateColumns: collapsed ? "4rem 1fr": "16rem 1fr"}}
       >
         <aside className='h-screen'>
-          <Sidebar setActiveScreen={setActiveScreen} collapsed={collapsed} setCollapsed={setCollapsed} />p
+          <Sidebar setActiveScreen={setActiveScreen} collapsed={collapsed} setCollapsed={setCollapsed} />
         </aside>
         <section className='overflow-y-auto'>
           {activeScreen === "home" && <Home />}

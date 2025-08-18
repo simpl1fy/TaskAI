@@ -6,7 +6,7 @@ import { requireAuth } from "../middleware/requireAuth";
 
 const analyticsRouter = new Hono();
 
-analyticsRouter.get("/complete", requireAuth, async (c) => {
+analyticsRouter.get("/data", requireAuth, async (c) => {
   try {
     const { userId } = c.get("authData");
 
