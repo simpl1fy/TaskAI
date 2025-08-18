@@ -69,7 +69,7 @@ export default function Analytics() {
       </header>
       <section className="grid grid-cols-2 gap-4">
         <div className="flex flex-col items-center">
-          <h3>Completed Tasks</h3>
+          <h3 className="font-semibold font-lg">Completed Tasks</h3>
           <Gauge
             value={data?.completed}
             valueMax={data?.total}
@@ -92,7 +92,7 @@ export default function Analytics() {
           />
         </div>
         <div className="flex flex-col items-center">
-          <h3>In Progress</h3>
+          <h3 className="font-semibold font-lg">In Progress</h3>
           <Gauge
             value={data.work_in_progress}
             valueMax={data?.total - data?.completed}
@@ -115,7 +115,7 @@ export default function Analytics() {
           />
         </div>
         <div className="col-span-2 flex flex-col items-center">
-          <h3>Incomplete</h3>
+          <h3 className="font-semibold font-lg">Incomplete</h3>
           <Gauge
             value={data.incomplete}
             valueMax={data?.total-data.completed}
