@@ -1,4 +1,4 @@
-import { timestamp, pgTable, varchar, integer, unique, pgEnum } from "drizzle-orm/pg-core";
+import { timestamp, pgTable, varchar, integer, unique, pgEnum, date, serial, uuid } from "drizzle-orm/pg-core";
 
 // export const statusEnum = pgEnum("status", ["pending", "completed"]);
 
@@ -33,4 +33,23 @@ export const tasks = pgTable("tasks", {
   title: varchar("title", { length: 255 }).notNull(),
   status: statusEnum(),
   order: integer("order").notNull().default(0)
+});
+
+export const productivity = pgTable("productivity", {
+  userId: varchar("user_id").references(() => users.id, {onDelete: 'cascade'}).notNull(),
+  day: date("day").notNull(),
+  totalSeconds: integer("total_seconds").notNull().default(0),
+  sessionsCount: integer("sessions_count").notNull().default(0),
+  goalSeconds: integer("goal_seconds").notNull().default(0),
+}, (t) => [
+  unique().on(t.userId, t.day)
+]);
+
+export const productivityAdd = pgTable("productivity_add", {
+  id: serial("id").primaryKey(),
+  requestId: uuid("request_id").notNull(),
+  userId: varchar("user_id").references(() => users.id, {onDelete: 'cascade'}).notNull(),
+  day: date("day").notNull(),
+  deltaSeconds: integer("delta_seconds").notNull(),
+  deltaSessions: integer("delta_sessions").notNull()
 });
