@@ -3,6 +3,7 @@ import { db } from "../db/db";
 import { tasksList, tasks, categories } from "../db/schema";
 import { requireAuth } from "../middleware/requireAuth";
 import { eq, desc, and } from "drizzle-orm";
+import { statusEnum } from "../db/schema";
 
 const tasksRouter = new Hono();
 
@@ -617,7 +618,8 @@ tasksRouter.post('/add_list', requireAuth, async (c) => {
     const taskRows = tasksArray.map((taskTitle: string, index) => ({
       title: taskTitle,
       taskListId: listId,
-      order: index
+      order: index,
+      status: "incomplete" as const,
     }));
 
     await db.insert(tasks).values(taskRows);

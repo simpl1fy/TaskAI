@@ -10,6 +10,7 @@ import { requireAuth } from './middleware/requireAuth';
 import { swaggerUI, SwaggerUI } from '@hono/swagger-ui';
 
 import { swaggerSpec } from './lib/swagger';
+import analyticsRouter from './routes/analyticsRoutes';
 
 const app = new Hono()
 
@@ -53,6 +54,7 @@ app.route("/test", testRouter); // test router
 app.route("/user", userRouter);
 app.route("/task", tasksRouter);
 app.route("/category", categoryRouter);
+app.route("/analytics", analyticsRouter);
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GEMINI_API_KEY });
 
