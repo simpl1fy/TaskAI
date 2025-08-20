@@ -19,7 +19,7 @@ import { useAuth } from "@clerk/clerk-react";
 import { toast } from "sonner";
 import { Skeleton } from "../../../../ui/skeleton";
 import { Button } from "../../../../ui/button";
-import { capitalizeFirst } from "@/helpers/capitalizeFirst";
+import { capitalizeFirst } from "@/helpers/helpers";
 
 type PropTypes = {
   open: boolean;

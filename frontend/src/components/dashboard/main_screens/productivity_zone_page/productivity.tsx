@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import Timer from "./components/timer";
 import TimerButtons from "./components/buttons";
+import { breakNotifications, workNotifications, createNotification } from "@/helpers/helpers";
 
 export enum TimerTypes {
   WORK = "work",
@@ -9,12 +10,20 @@ export enum TimerTypes {
 
 export default function Productivity() {
   const [workTime, setWorkTime] = useState<number>(1797);
-  const [breakTime, setBreakTime] = useState<number>(0);
+  const [breakTime, setBreakTime] = useState<number>(297);
   const [timerType, setTimerType] = useState<TimerTypes>(TimerTypes.WORK);
   const [active, setActive] = useState<boolean>(false);
   const [paused, setPaused] = useState<boolean>(false);
+  const [notificationGranted, setNotificationGranted] = useState(Notification.permission);
+  const [sessionIterations, setSessionIterations] = useState<number>(0);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if(notificationGranted === "default" || notificationGranted === "denied") {
+      Notification.requestPermission().then((permission) => {setNotificationGranted(permission)})
+    }
+  }, [])
 
   useEffect(() => {
     if ((workTime % 3600) / 60 === 30 || workTime === 30 * 60) {
@@ -29,6 +38,11 @@ export default function Productivity() {
       intervalRef.current = setInterval(() => {
         setBreakTime((prev) => prev + 1);
       }, 1000);
+
+      const body = breakNotifications[Math.floor(Math.random()*breakNotifications.length)];
+      createNotification(body);
+
+      setSessionIterations(prev => prev+0.5);
       // Add a backend call to store the data
     }
 
@@ -43,6 +57,11 @@ export default function Productivity() {
       intervalRef.current = setInterval(() => {
         setWorkTime((prev) => prev + 1);
       }, 1000);
+
+      const body = workNotifications[Math.floor(Math.random()*workNotifications.length)];
+      createNotification(body);
+
+      setSessionIterations(prev => prev+0.5);
     }
   }, [workTime, breakTime]);
 
@@ -103,6 +122,7 @@ export default function Productivity() {
           paused={paused}
           handleStopPause={handleStopPauseTimer}
         />
+        <span>{Math.floor(sessionIterations)}</span>
       </section>
     </div>
   );
