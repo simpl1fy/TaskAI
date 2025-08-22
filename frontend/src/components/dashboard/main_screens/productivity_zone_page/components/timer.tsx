@@ -17,7 +17,7 @@ export default function Timer({ workTime, breakTime, timerType }: TimerProps) {
     const ss = String(seconds).padStart(2, "0");
 
     return (
-      <p className="text-9xl">
+      <p className="text-[10rem]">
         {mm}:{ss}
       </p>
     );
