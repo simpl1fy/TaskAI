@@ -32,3 +32,8 @@ export const workNotifications = [
   "⚡ Back to work mode! Another 30-minute sprint begins.",
   "👏 You’re doing great! Time to start the next work session."
 ];
+
+export enum TimerTypes {
+  WORK = "work",
+  BREAK = "break",
+}

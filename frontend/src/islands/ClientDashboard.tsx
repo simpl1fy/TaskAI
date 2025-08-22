@@ -5,6 +5,7 @@ import Settings from '@/components/dashboard/main_screens/settings_page/settings
 import Sidebar from './Sidebar';
 import { useState } from 'react';
 import Productivity from '@/components/dashboard/main_screens/productivity_zone_page/productivity';
+import { TimerProvider } from '@/context/useTimer';
 
 const ClientDashboard = () => {
 
@@ -13,6 +14,7 @@ const ClientDashboard = () => {
 
   return (
     <ClerkProviderWrapper>
+      <TimerProvider>
       <div className={`grid h-screen transition-[grid-template-columns] duration-300 ease-in-out`}
         style={{ gridTemplateColumns: collapsed ? "4rem 1fr": "16rem 1fr"}}
       >
@@ -26,6 +28,7 @@ const ClientDashboard = () => {
           {activeScreen === "settings" && <Settings />}
         </section>
       </div>
+      </TimerProvider>
     </ClerkProviderWrapper>
   )
 }

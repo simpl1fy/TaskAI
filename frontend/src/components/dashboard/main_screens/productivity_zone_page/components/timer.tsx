@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { TimerTypes } from "../productivity";
+import { TimerTypes } from "@/helpers/helpers"; 
 
 type TimerProps = {
   workTime: number;

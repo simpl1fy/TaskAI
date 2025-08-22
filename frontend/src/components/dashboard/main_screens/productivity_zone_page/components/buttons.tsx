@@ -5,7 +5,7 @@ interface PropTypes {
   handleStart: () => void;
   active: boolean;
   paused: boolean;
-  handleStopPause: (type: string) => void; // accepted inputs -> "pause" / "stop"
+  handleStopPause: (type: "stop" | "pause") => void; // accepted inputs -> "pause" / "stop"
 }
 
 export default function TimerButtons({
