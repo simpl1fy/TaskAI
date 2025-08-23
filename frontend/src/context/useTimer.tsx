@@ -45,14 +45,14 @@ const formatHMS = (sec: number) => {
 
 export function TimerProvider({ children }: { children: React.ReactNode }) {
   // Committed (accumulated) seconds for the *current* block
-  const [workAccum, setWorkAccum]   = useState(() => getNumber(localStorage.getItem("work_time"), 29*60));
-  const [breakAccum, setBreakAccum] = useState(() => getNumber(localStorage.getItem("break_time"), 5*60));
+  const [workAccum, setWorkAccum]   = useState(() => getNumber(sessionStorage.getItem("work_time"), 0));
+  const [breakAccum, setBreakAccum] = useState(() => getNumber(sessionStorage.getItem("break_time"), 0));
 
   // Session aggregates
   const [sessionWorkAccum, setSessionWorkAccum] =
-    useState(() => getNumber(localStorage.getItem("session_total_work"), 0));
+    useState(() => getNumber(sessionStorage.getItem("session_total_work"), 0));
   const [sessionIterations, setSessionIterations] =
-    useState(() => getNumber(localStorage.getItem("session_iterations"), 0));
+    useState(() => getNumber(sessionStorage.getItem("session_iterations"), 0));
 
   // State
   const [status, setStatus] = useState<Status>("idle");
@@ -62,10 +62,10 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   const [startedAt, setStartedAt] = useState<number | null>(null);
 
   // Persist (optional—remove if you don’t want persistence)
-  useEffect(() => localStorage.setItem("work_time", String(workAccum)), [workAccum]);
-  useEffect(() => localStorage.setItem("break_time", String(breakAccum)), [breakAccum]);
-  useEffect(() => localStorage.setItem("session_total_work", String(sessionWorkAccum)), [sessionWorkAccum]);
-  useEffect(() => localStorage.setItem("session_iterations", String(sessionIterations)), [sessionIterations]);
+  useEffect(() => sessionStorage.setItem("work_time", String(workAccum)), [workAccum]);
+  useEffect(() => sessionStorage.setItem("break_time", String(breakAccum)), [breakAccum]);
+  useEffect(() => sessionStorage.setItem("session_total_work", String(sessionWorkAccum)), [sessionWorkAccum]);
+  useEffect(() => sessionStorage.setItem("session_iterations", String(sessionIterations)), [sessionIterations]);
 
   // 1s tick to refresh UI; time itself is derived from Date.now()
   const tickRef = useRef<number | null>(null);
@@ -155,13 +155,20 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   };
 
   const stop = () => {
+    if(startedAt) {
+      const sec = Math.floor((Date.now() - startedAt)/1000);
+      if(timerType === TimerTypes.WORK) {
+        setSessionWorkAccum(v => v+sec);
+        setWorkAccum(0);
+      } else {
+        setBreakAccum(0);
+      }
+    }
     setStartedAt(null);
     setStatus("idle");
     setTimerType(TimerTypes.WORK);
     setWorkAccum(0);
     setBreakAccum(0);
-    
-    // Keep session totals (wipe them here if you prefer)
   };
 
   const toggle = () => (status === "running" ? pause() : start());

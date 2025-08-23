@@ -41,7 +41,7 @@ export default function Productivity() {
         <section className="flex flex-col items-center gap-10 mt-10 col-span-3">
           <Timer workTime={workTime} breakTime={breakTime} timerType={timerType} />
           <TimerButtons
-            handleStart={start}
+            handleStart={handleStart}
             active={active}
             paused={paused}
             handleStopPause={handleStopPause}
