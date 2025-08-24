@@ -7,6 +7,8 @@ import {
   workNotifications,
   createNotification,
 } from "@/helpers/helpers";
+import { toast } from "sonner";
+import { useAuth } from "@clerk/clerk-react";
 
 type Status = "idle" | "running" | "paused";
 
@@ -44,6 +46,10 @@ const formatHMS = (sec: number) => {
 };
 
 export function TimerProvider({ children }: { children: React.ReactNode }) {
+
+  const { getToken } = useAuth();
+  const baseUrl = import.meta.env.PUBLIC_BACKEND_URL;
+
   // Committed (accumulated) seconds for the *current* block
   const [workAccum, setWorkAccum]   = useState(() => getNumber(sessionStorage.getItem("work_time"), 0));
   const [breakAccum, setBreakAccum] = useState(() => getNumber(sessionStorage.getItem("break_time"), 0));
@@ -133,43 +139,92 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
 
   // Controls
   const start = () => {
-    if (status === "running") return;
-    setStatus("running");
-    setStartedAt(Date.now());
-  };
+  if (status === "running") return;
+  const now = Date.now();
+  setStatus("running");
+  setStartedAt(now);
+};
 
-  const pause = () => {
-    if (status !== "running" || !startedAt) {
-      setStatus("paused");
-      return;
-    }
-    const sec = Math.floor((Date.now() - startedAt) / 1000);
-    if (timerType === TimerTypes.WORK) {
-      setWorkAccum(v => v + sec);
-      setSessionWorkAccum(v => v + sec);
-    } else {
-      setBreakAccum(v => v + sec);
-    }
-    setStartedAt(null);
+const pause = async () => {
+  if (status !== "running" || !startedAt) {
     setStatus("paused");
-  };
+    return;
+  }
 
-  const stop = () => {
-    if(startedAt) {
-      const sec = Math.floor((Date.now() - startedAt)/1000);
-      if(timerType === TimerTypes.WORK) {
-        setSessionWorkAccum(v => v+sec);
-        setWorkAccum(0);
-      } else {
-        setBreakAccum(0);
-      }
+  const end = Date.now();
+
+  // update local accumulators
+  const sec = Math.floor((end - startedAt) / 1000);
+  if (timerType === TimerTypes.WORK) {
+    setWorkAccum(v => v + sec);
+    setSessionWorkAccum(v => v + sec);
+  } else {
+    setBreakAccum(v => v + sec);
+  }
+
+  setStatus("paused");
+
+  // call backend
+  try {
+    const token = await getToken();
+    const payload = {
+      startTime: startedAt,
+      endTime: end,
+    };
+    const response = await fetch(`${baseUrl}/prod/add?type=stop`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    const resData = await response.json();
+    if (!resData.success) toast.error("Error while saving time");
+  } catch (err) {
+    console.error("Pause error", err);
+    toast.error("Error while saving time");
+  }
+  setStartedAt(null);
+};
+
+const stop = async () => {
+  const end = Date.now();
+
+  if (startedAt) {
+    const sec = Math.floor((end - startedAt) / 1000);
+    if (timerType === TimerTypes.WORK) {
+      setSessionWorkAccum(v => v + sec);
     }
-    setStartedAt(null);
-    setStatus("idle");
-    setTimerType(TimerTypes.WORK);
-    setWorkAccum(0);
-    setBreakAccum(0);
-  };
+  }
+
+  setStatus("idle");
+  setTimerType(TimerTypes.WORK);
+  setWorkAccum(0);
+  setBreakAccum(0);
+
+  try {
+    const token = await getToken();
+    const payload = {
+      startTime: startedAt,
+      endTime: end,
+    };
+    const response = await fetch(`${baseUrl}/prod/add?type=stop`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    const resData = await response.json();
+    if (resData.success) toast.success("Work session saved!");
+  } catch (err) {
+    console.error("Stop error", err);
+    toast.error("Error while saving time");
+  }
+  setStartedAt(null);
+};
 
   const toggle = () => (status === "running" ? pause() : start());
 
