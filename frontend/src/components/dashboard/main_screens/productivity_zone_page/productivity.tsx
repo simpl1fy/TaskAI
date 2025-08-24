@@ -1,13 +1,7 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import Timer from "./components/timer";
 import TimerButtons from "./components/buttons";
 import { useTimer } from "@/context/useTimer";
-
-
-const getNumber = (s: string | null, fallback: number) => {
-  const n = Number(s);
-  return Number.isFinite(n) && n >= 0 ? n : fallback;
-};
 
 export default function Productivity() {
   

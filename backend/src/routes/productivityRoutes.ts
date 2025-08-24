@@ -102,7 +102,7 @@ pRouter.get("/get_time", requireAuth, async (c) => {
       }
       return acc;
     }, []);
-    return c.json({ dataFixed }, 200);
+    return c.json({ success: true, dataFixed }, 200);
   } catch (err) {
     console.error("An error occured while fetching durations per day =", err);
     return c.json({ message: "Internal Server Error" }, 500);

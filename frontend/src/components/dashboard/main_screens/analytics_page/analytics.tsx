@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Gauge, gaugeClasses } from "@mui/x-charts/Gauge";
 import { RotateCcw } from "lucide-react";
+import MiniTimer from "../../global_components/miniTimer";
 
 interface TaskData {
   total: number;
@@ -49,11 +50,14 @@ export default function Analytics() {
   if (!data) {
     return (
       <div className="p-5">
-        <header className="mb-5">
-          <h3 className="text-2xl">Analytics</h3>
-          <p className="text-gray-700 text-md">
-            View stats, check your progress of work completed.
-          </p>
+        <header className="mb-5 flex justify-between items-center">
+          <section>
+            <h3 className="text-2xl">Analytics</h3>
+            <p className="text-gray-700 text-md">
+              View stats, check your progress of work completed.
+            </p>
+          </section>
+          <MiniTimer />
         </header>
         <p>Loading...</p>
       </div>
