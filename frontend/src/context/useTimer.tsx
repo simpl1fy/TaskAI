@@ -6,6 +6,7 @@ import {
   breakNotifications,
   workNotifications,
   createNotification,
+  longBreakNotifications
 } from "@/helpers/helpers";
 import { toast } from "sonner";
 import { useAuth } from "@clerk/clerk-react";
@@ -28,8 +29,9 @@ type TimerContextValue = {
 
 const TimerContext = createContext<TimerContextValue | null>(null);
 
-const WORK_LIMIT = 30 * 60; // 30:00
+const WORK_LIMIT = 25 * 60; // 25:00
 const BREAK_LIMIT = 5 * 60; // 05:00
+const LONG_BREAK_LIMIT = 15 * 60; // larger break time after 4 iterations
 
 const getNumber = (s: string | null, fallback: number) => {
   const n = Number(s);
@@ -66,6 +68,8 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
 
   // Timestamp for current live segment (null if paused/idle)
   const [startedAt, setStartedAt] = useState<number | null>(null);
+
+  const completedWorkBlocks = useRef(0);
 
   // Persist (optional—remove if you don’t want persistence)
   useEffect(() => sessionStorage.setItem("work_time", String(workAccum)), [workAccum]);
@@ -120,11 +124,13 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     // WORK -> BREAK
     if (timerType === TimerTypes.WORK && workTime >= WORK_LIMIT) {
       if (liveSec > 0) setSessionWorkAccum(v => v + liveSec); // commit live to session
-      setWorkAccum(0);                                        // reset block
-      setTimerType(TimerTypes.BREAK);
+      setWorkAccum(0);                                     // reset block
+      completedWorkBlocks.current += 1;
+      const isLong = completedWorkBlocks.current%4 === 0;
+      setTimerType(isLong ? TimerTypes.LONG_BREAK: TimerTypes.BREAK);
       setStartedAt(Date.now());                               // start break immediately
       setSessionIterations(i => i + 0.5);
-      createNotification(breakNotifications[Math.floor(Math.random() * breakNotifications.length)]);
+      createNotification(isLong ? longBreakNotifications[Math.floor(Math.random() * longBreakNotifications.length)]: breakNotifications[Math.floor(Math.random() * breakNotifications.length)])
     }
 
     // BREAK -> WORK
@@ -133,6 +139,14 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
       setTimerType(TimerTypes.WORK);
       setStartedAt(Date.now());                               // start work immediately
       setSessionIterations(i => i + 0.5);
+      createNotification(workNotifications[Math.floor(Math.random() * workNotifications.length)]);
+    }
+    
+    if(timerType === TimerTypes.LONG_BREAK && breakTime >= LONG_BREAK_LIMIT) {
+      setBreakAccum(0);
+      setTimerType(TimerTypes.WORK);
+      setStartedAt(Date.now());
+      setSessionIterations(i => i+0.5);
       createNotification(workNotifications[Math.floor(Math.random() * workNotifications.length)]);
     }
   }, [status, timerType, workTime, breakTime, liveSec]);

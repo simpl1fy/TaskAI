@@ -33,7 +33,22 @@ export const workNotifications = [
   "👏 You’re doing great! Time to start the next work session."
 ];
 
+export const longBreakNotifications: string[] = [
+  "🎉 You worked hard! Time to reset and refresh — take a long break 🛋️",
+  "👏 Awesome focus! Reward yourself with a longer rest now ☕",
+  "💪 Great job finishing four sessions. Breathe, relax, and recharge 🌿",
+  "🔥 Consistency pays off! Take a well-deserved long break 😌",
+  "🌟 You’ve earned it — step away and enjoy your long break 🌴",
+  "🏆 Fantastic work streak! Time to relax and clear your mind 🧘",
+  "💯 Well done! Recharge with a long break before the next round ⚡",
+  "🚀 Focus mode complete — now it’s relaxation mode. Take your long break 💤",
+  "🌈 Solid effort! Give your brain and body a proper reset 🧃",
+  "✨ Productivity achieved! Unwind and refresh during this long break 🎶"
+];
+
+
 export enum TimerTypes {
   WORK = "work",
   BREAK = "break",
+  LONG_BREAK = "long_break"
 }

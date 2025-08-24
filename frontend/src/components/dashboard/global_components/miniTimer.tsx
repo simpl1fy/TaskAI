@@ -40,7 +40,10 @@ export default function MiniTimer() {
 
   return (
     <div className="bg-violet-100 rounded-full px-5 py-2 flex gap-4 items-center">
-      <section>{display}</section>
+      <section className="flex gap-1">
+        <div className="text-sm text-gray-800">{timerType === TimerTypes.WORK ? "📔Work Time" : timerType === TimerTypes.BREAK ? "😪Break Time" : "😴Long Break Time"}</div>
+        <div>{display}</div>
+      </section>
       <section className="flex gap-2">
         <span
           title="Stop Timer"
