@@ -36,7 +36,7 @@ export default function MiniTimer() {
   // if timer is stopped do not show anything
   if (!active) {
     return;
-  }
+  } 
 
   return (
     <div className="bg-violet-100 rounded-full px-5 py-2 flex gap-4 items-center">
