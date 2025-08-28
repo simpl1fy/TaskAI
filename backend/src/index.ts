@@ -11,6 +11,7 @@ import { swaggerUI, SwaggerUI } from '@hono/swagger-ui';
 
 import { swaggerSpec } from './lib/swagger';
 import analyticsRouter from './routes/analyticsRoutes';
+import pRouter from './routes/productivityRoutes';
 
 const app = new Hono()
 
@@ -55,6 +56,7 @@ app.route("/user", userRouter);
 app.route("/task", tasksRouter);
 app.route("/category", categoryRouter);
 app.route("/analytics", analyticsRouter);
+app.route("/prod", pRouter);  // pRouter -> productivityRouter (Didn't want to write productivityRouter over and over again)
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GEMINI_API_KEY });
 

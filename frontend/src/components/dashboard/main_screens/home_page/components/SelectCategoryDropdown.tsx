@@ -1,5 +1,5 @@
 import type { Category } from "@/types/category";
-import { capitalizeFirst } from "@/helpers/capitalizeFirst";
+import { capitalizeFirst } from "@/helpers/helpers";
 
 type PropTypes = {
   categories: Category[] | undefined;
