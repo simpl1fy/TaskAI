@@ -181,11 +181,13 @@ const pause = async () => {
   // call backend
   try {
     const token = await getToken();
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const payload = {
       startTime: startedAt,
       endTime: end,
+      timeZone,
     };
-    const response = await fetch(`${baseUrl}/prod/add?type=stop`, {
+    const response = await fetch(`${baseUrl}/prod/add`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,

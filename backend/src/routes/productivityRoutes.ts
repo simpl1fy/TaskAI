@@ -10,12 +10,23 @@ type AddBodyType = {
   // checked
   startTime: number;
   endTime: number;
+  timeZone?: string;
 };
+
+function isoDateInTimeZone(d: Date, timeZone: string | undefined) {
+  const dtf =  new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  return dtf.format(d);
+}
 
 pRouter.post("/add", requireAuth, async (c) => {
   try {
     const { userId } = c.get("authData");
-    const { startTime, endTime }: AddBodyType = await c.req.json();
+    const { startTime, endTime, timeZone }: AddBodyType = await c.req.json();
 
     if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) {
       return c.json({ message: "Start and end must be finite!" }, 400);
@@ -26,7 +37,18 @@ pRouter.post("/add", requireAuth, async (c) => {
     const startDate = new Date(startTime);
     const endDate = new Date(endTime);
 
-    const dateOnly = startDate.toISOString().split("T")[0];
+    const startDateOnly = isoDateInTimeZone(startDate, timeZone);
+    const endDateOnly = isoDateInTimeZone(endDate, timeZone);
+
+    let dateOnly: string | undefined;
+
+    if(Number.parseInt(startDateOnly.substring(8)) == Number.parseInt(endDateOnly.substring(8))) {
+      dateOnly = startDateOnly;
+    } else if (Number.parseInt(startDateOnly.substring(8)) < Number.parseInt(endDateOnly.substring(8))) {
+      dateOnly = endDateOnly;
+    } else {
+      return c.json({ success: false, message: "End date cannot be smaller than start date" }, 400);
+    }
 
     // checking for existing data
     const dates = await db
