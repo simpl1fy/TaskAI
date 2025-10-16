@@ -25,7 +25,7 @@ const ClientDashboard = () => {
           {activeScreen === "home" && <Home />}
           {activeScreen === "analytics" && <Analytics />}
           {activeScreen === "productivity" && <Productivity />}
-          {activeScreen === "settings" && <Settings />}
+          {/* {activeScreen === "settings" && <Settings />} */}
         </section>
       </div>
       </TimerProvider>

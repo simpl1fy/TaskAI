@@ -46,11 +46,11 @@ export default function Sidebar({
       icon: <SquarePen size={20} />,
       click: "productivity",
     },
-    {
-      name: "Settings",
-      icon: <Settings size={20} />,
-      click: "settings",
-    },
+    // {
+    //   name: "Settings",
+    //   icon: <Settings size={20} />,
+    //   click: "settings",
+    // },
   ];
 
   useEffect(() => {
