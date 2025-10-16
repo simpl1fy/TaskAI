@@ -16,7 +16,7 @@ import { Trash } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import { toast } from "sonner";
 import { LoaderCircle } from "lucide-react";
-import { capitalizeFirst } from "@/helpers/capitalizeFirst";
+import { capitalizeFirst } from "@/helpers/helpers";
 import SelectCategoryDropdown from "./SelectCategoryDropdown";
 
 type PropTypes = {

@@ -14,12 +14,14 @@ import type { Dispatch, SetStateAction } from "react";
 import clsx from "clsx";
 
 interface PropTypes {
+  activeScreen: String;
   setActiveScreen: Dispatch<SetStateAction<String>>;
   collapsed: boolean;
   setCollapsed: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function Sidebar({
+  activeScreen,
   setActiveScreen,
   collapsed,
   setCollapsed,
@@ -40,9 +42,9 @@ export default function Sidebar({
       click: "analytics",
     },
     {
-      name: "Study Zone",
+      name: "Productivity Zone",
       icon: <SquarePen size={20} />,
-      click: "study",
+      click: "productivity",
     },
     {
       name: "Settings",
@@ -119,8 +121,9 @@ export default function Sidebar({
               className={clsx(
                 "mb-3 text-sm flex items-center p-2 gap-4 cursor-pointer",
                 collapsed
-                  ? "justify-center rounded-full"
-                  : "rounded-lg hover:bg-violet-300 hover:shadow-sm transition-colors"
+                  ? "justify-center rounded-lg py-2 px-4"
+                  : "rounded-lg hover:bg-violet-300 hover:shadow-sm transition-colors",
+                activeScreen === option.click ? "bg-violet-300" : ""
               )}
               onClick={() => setActiveScreen(option.click)}
               title={collapsed ? option.name : undefined}

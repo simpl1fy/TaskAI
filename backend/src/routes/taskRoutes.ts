@@ -588,7 +588,7 @@ tasksRouter.delete('/delete_task/:id', requireAuth, async (c) => {
  *         content:
  *           application/json:
  *             schema:
- *               type: object*
+ *               type: object
 */
 tasksRouter.post('/add_list', requireAuth, async (c) => {
   try {

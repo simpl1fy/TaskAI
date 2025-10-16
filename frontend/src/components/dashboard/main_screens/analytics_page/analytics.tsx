@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Gauge, gaugeClasses } from "@mui/x-charts/Gauge";
 import { RotateCcw } from "lucide-react";
+import MiniTimer from "../../global_components/miniTimer";
 
 interface TaskData {
   total: number;
@@ -51,9 +52,9 @@ export default function Analytics() {
       <div className="p-5">
         <header className="mb-5">
           <h3 className="text-2xl">Analytics</h3>
-          <p className="text-gray-700 text-md">
-            View stats, check your progress of work completed.
-          </p>
+            <p className="text-gray-700 text-md">
+              View stats, check your progress of work completed.
+            </p>
         </header>
         <p>Loading...</p>
       </div>
@@ -62,85 +63,88 @@ export default function Analytics() {
 
   return (
     <div className="px-5 py-5">
-      <header className="mb-5">
-        <h3 className="text-2xl">Analytics</h3>
-        <p className="text-gray-700 text-md">
-          View stats, check your progress of work completed.
-        </p>
-      </header>
-      <section className="rounded-lg shadow-lg p-5">
-        <span className="flex justify-end cursor-pointer" onClick={() => setReload(v => !v)}><RotateCcw size={20} /></span>
-        <section className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col items-center">
-            <h3>Completed Tasks</h3>
-            <Gauge
-              value={data?.completed}
-              valueMax={data?.total}
-              height={250}
-              cornerRadius="50%"
-              startAngle={-150}
-              endAngle={150}
-              text={({ value, valueMax }) => `${value}/${valueMax}`}
-              sx={(theme) => ({
-                [`& .${gaugeClasses.valueText}`]: {
-                  fontSize: 30,
-                },
-                [`& .${gaugeClasses.valueArc}`]: {
-                  fill: "#00c950",
-                },
-                [`& .${gaugeClasses.referenceArc}`]: {
-                  fill: '#f0fdf4',
-                },
-              })}
-            />
-          </div>
-          <div className="flex flex-col items-center">
-            <h3>In Progress</h3>
-            <Gauge
-              value={data.work_in_progress}
-              valueMax={data?.total - data?.completed}
-              height={250}
-              cornerRadius="50%"
-              startAngle={-150}
-              endAngle={150}
-              text={({ value, valueMax }) => `${value}/${valueMax}`}
-              sx={(theme) => ({
-                [`& .${gaugeClasses.valueText}`]: {
-                  fontSize: 30,
-                },
-                [`& .${gaugeClasses.valueArc}`]: {
-                  fill: "#f0b100",
-                },
-                [`& .${gaugeClasses.referenceArc}`]: {
-                  fill: '#fef9c2',
-                },
-              })}
-            />
-          </div>
-          <div className="col-span-2 flex flex-col items-center">
-            <h3>Incomplete</h3>
-            <Gauge
-              value={data.incomplete}
-              valueMax={data?.total-data.completed}
-              height={250}
-              cornerRadius="50%"
-              startAngle={-150}
-              endAngle={150}
-              text={({ value, valueMax }) => `${value}/${valueMax}`}
-              sx={(theme) => ({
-                [`& .${gaugeClasses.valueText}`]: {
-                  fontSize: 30,
-                },
-                [`& .${gaugeClasses.valueArc}`]: {
-                  fill: "#fb2c36",
-                },
-                [`& .${gaugeClasses.referenceArc}`]: {
-                  fill: '#ffe2e2',
-                },
-              })}
-            />
-          </div>
+      <header className="mb-5 flex justify-between items-center">
+        <section>
+          <h3 className="text-2xl">Analytics</h3>
+          <p className="text-gray-700 text-md">
+            View stats, check your progress of work completed.
+          </p>
         </section>
+        <MiniTimer />
+      </header>
+      <section className="bg-orange-50 flex sm:flex-col md:flex-row md:flex-wrap lg:flex-row justify-around rounded-lg shadow-md p-5 relative">
+        <section className="absolute top-3 right-3 cursor-pointer" onClick={() => setReload(v => !v)}>
+          <RotateCcw size={19} />
+        </section>
+        <div className="flex flex-col items-center">
+          <h3>Completed Tasks</h3>
+          <Gauge
+            value={data?.completed}
+            valueMax={data?.total}
+            // height={250}
+            cornerRadius="50%"
+            startAngle={-150}
+            endAngle={150}
+            text={({ value, valueMax }) => `${value}/${valueMax}`}
+            sx={(theme) => ({
+              [`& .${gaugeClasses.valueText}`]: {
+                fontSize: 25,
+              },
+              [`& .${gaugeClasses.valueArc}`]: {
+                fill: "#00c950",
+              },
+              [`& .${gaugeClasses.referenceArc}`]: {
+                fill: "#f0fdf4",
+              },
+            })}
+          />
+        </div>
+        <div className="flex flex-col items-center">
+          <h3>In Progress</h3>
+          <Gauge
+            value={data.work_in_progress}
+            valueMax={data?.total - data?.completed}
+            // height={250}
+            cornerRadius="50%"
+            startAngle={-150}
+            endAngle={150}
+            text={({ value, valueMax }) => `${value}/${valueMax}`}
+            sx={(theme) => ({
+              [`& .${gaugeClasses.valueText}`]: {
+                fontSize: 25,
+              },
+              [`& .${gaugeClasses.valueArc}`]: {
+                fill: "#f0b100",
+              },
+              [`& .${gaugeClasses.referenceArc}`]: {
+                fill: "#fef9c2",
+              },
+            })}
+          />
+        </div>
+        <div className="flex flex-col items-center">
+          <h3>Incomplete</h3>
+          <Gauge
+            value={data.incomplete}
+            valueMax={data?.total - data.completed}
+            // height={250}
+            cornerRadius="50%"
+            startAngle={-150}
+            endAngle={150}
+            text={({ value, valueMax }) => `${value}/${valueMax}`}
+            sx={(theme) => ({
+              [`& .${gaugeClasses.valueText}`]: {
+                fontSize: 25,
+              },
+              [`& .${gaugeClasses.valueArc}`]: {
+                fill: "#fb2c36",
+              },
+              [`& .${gaugeClasses.referenceArc}`]: {
+                fill: "#ffe2e2",
+              },
+            })}
+          />
+        </div>
       </section>
     </div>
   );
