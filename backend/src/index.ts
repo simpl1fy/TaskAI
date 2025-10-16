@@ -7,7 +7,7 @@ import categoryRouter from './routes/categoryRoutes';
 import 'dotenv/config';
 import { GoogleGenAI, Type } from '@google/genai';
 import { requireAuth } from './middleware/requireAuth';
-import { swaggerUI, SwaggerUI } from '@hono/swagger-ui';
+import { swaggerUI } from '@hono/swagger-ui';
 
 import { swaggerSpec } from './lib/swagger';
 import analyticsRouter from './routes/analyticsRoutes';
@@ -22,7 +22,7 @@ app.get("/documentation/ui", swaggerUI({ url: '/doc' }));
 app.use(
   "*",
   cors({
-    origin: ["http://localhost:4321", "https://aitaskmanager01.netlify.app"],
+    origin: '*',
     allowHeaders: ["x-clerk-user-id", "Content-Type", "Authorization"],
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
